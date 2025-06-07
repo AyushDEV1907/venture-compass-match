@@ -1,0 +1,301 @@
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Heart, X, Building2, MapPin, Users, TrendingUp, Eye, MessageSquare } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface StartupData {
+  id: number;
+  name: string;
+  description: string;
+  sector: string;
+  stage: string;
+  fundingTarget: string;
+  location: string;
+  teamSize: string;
+  revenue: string;
+  traction: string;
+  logo: string;
+}
+
+interface InvestorSwipeProps {
+  subscription: string;
+}
+
+const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
+  const { toast } = useToast();
+  const [currentStartup, setCurrentStartup] = useState<StartupData | null>(null);
+  const [swipeCount, setSwipeCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const demoStartups: StartupData[] = [
+    {
+      id: 1,
+      name: "TechFlow AI",
+      description: "Revolutionary AI-powered workflow automation platform that helps businesses streamline their operations and increase productivity by 40%.",
+      sector: "AI/ML",
+      stage: "Series A",
+      fundingTarget: "$2M",
+      location: "San Francisco, CA",
+      teamSize: "12",
+      revenue: "$50K MRR",
+      traction: "500+ enterprise customers, 300% YoY growth",
+      logo: "🤖"
+    },
+    {
+      id: 2,
+      name: "EcoCharge",
+      description: "Sustainable energy startup developing next-generation solar panel technology with 35% higher efficiency than traditional panels.",
+      sector: "CleanTech",
+      stage: "Seed",
+      fundingTarget: "$1.5M",
+      location: "Austin, TX",
+      teamSize: "8",
+      revenue: "$25K MRR",
+      traction: "50+ installations, partnerships with 3 major utilities",
+      logo: "🌱"
+    },
+    {
+      id: 3,
+      name: "MedLink Pro",
+      description: "Telemedicine platform connecting patients with specialists globally, reducing wait times by 80% and improving healthcare accessibility.",
+      sector: "HealthTech",
+      stage: "Series A",
+      fundingTarget: "$3M",
+      location: "Boston, MA",
+      teamSize: "25",
+      revenue: "$120K MRR",
+      traction: "10K+ patients served, 200+ doctors on platform",
+      logo: "🏥"
+    },
+    {
+      id: 4,
+      name: "EduSphere",
+      description: "Interactive learning platform using VR/AR technology to create immersive educational experiences for K-12 students.",
+      sector: "EdTech",
+      stage: "Seed",
+      fundingTarget: "$800K",
+      location: "Seattle, WA",
+      teamSize: "6",
+      revenue: "$15K MRR",
+      traction: "100+ schools, 5K+ students using platform",
+      logo: "🎓"
+    },
+    {
+      id: 5,
+      name: "FinSecure",
+      description: "Blockchain-based financial security platform providing real-time fraud detection and prevention for digital transactions.",
+      sector: "FinTech",
+      stage: "Pre-seed",
+      fundingTarget: "$500K",
+      location: "New York, NY",
+      teamSize: "4",
+      revenue: "$8K MRR",
+      traction: "20+ financial institutions interested, MVP launched",
+      logo: "🔒"
+    }
+  ];
+
+  useEffect(() => {
+    loadNextStartup();
+  }, []);
+
+  const loadNextStartup = () => {
+    setIsLoading(true);
+    // Simulate API call delay
+    setTimeout(() => {
+      const randomStartup = demoStartups[Math.floor(Math.random() * demoStartups.length)];
+      setCurrentStartup(randomStartup);
+      setIsLoading(false);
+    }, 500);
+  };
+
+  const handleSwipe = (interested: boolean) => {
+    if (!currentStartup) return;
+
+    const maxSwipes = subscription === 'free' ? 5 : subscription === 'pro' ? 50 : 999;
+    
+    if (swipeCount >= maxSwipes && subscription !== 'premium') {
+      toast({
+        title: "Search Limit Reached",
+        description: `You've reached your ${subscription} plan limit. Upgrade for more searches.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Simulate learning from user preference
+    const preferences = JSON.parse(localStorage.getItem('investorPreferences') || '{}');
+    const newPreference = {
+      startupId: currentStartup.id,
+      interested,
+      sector: currentStartup.sector,
+      stage: currentStartup.stage,
+      timestamp: new Date().toISOString()
+    };
+    
+    const existingLearnings = JSON.parse(localStorage.getItem('swipeLearning') || '[]');
+    localStorage.setItem('swipeLearning', JSON.stringify([...existingLearnings, newPreference]));
+
+    setSwipeCount(prev => prev + 1);
+    
+    if (interested) {
+      const matches = JSON.parse(localStorage.getItem('investorMatches') || '[]');
+      localStorage.setItem('investorMatches', JSON.stringify([...matches, currentStartup]));
+      
+      toast({
+        title: "Matched! 💫",
+        description: `You showed interest in ${currentStartup.name}. They can now see your profile.`,
+      });
+    } else {
+      toast({
+        title: "Passed",
+        description: "We'll use this to improve your recommendations.",
+      });
+    }
+
+    loadNextStartup();
+  };
+
+  const getSearchesRemaining = () => {
+    const maxSwipes = subscription === 'free' ? 5 : subscription === 'pro' ? 50 : 999;
+    return subscription === 'premium' ? 'Unlimited' : `${Math.max(0, maxSwipes - swipeCount)} remaining`;
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="border-0 shadow-lg h-[600px] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Finding your next perfect match...</p>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!currentStartup) {
+    return (
+      <Card className="border-0 shadow-lg h-[600px] flex items-center justify-center">
+        <div className="text-center">
+          <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">No more startups to review right now.</p>
+          <Button onClick={loadNextStartup} className="mt-4">Refresh</Button>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Discover Startups</h2>
+        <Badge variant="outline">{getSearchesRemaining()}</Badge>
+      </div>
+
+      <Card className="border-0 shadow-2xl overflow-hidden">
+        <div className="relative h-[600px]">
+          {/* Startup Card */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 p-6">
+            <div className="h-full flex flex-col">
+              {/* Header */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center text-2xl">
+                  {currentStartup.logo}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold">{currentStartup.name}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+                      {currentStartup.sector}
+                    </Badge>
+                    <Badge variant="outline">{currentStartup.stage}</Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                {currentStartup.description}
+              </p>
+
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
+                  <TrendingUp className="w-5 h-5 text-green-600" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Revenue</p>
+                    <p className="font-semibold">{currentStartup.revenue}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
+                  <Users className="w-5 h-5 text-blue-600" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Team Size</p>
+                    <p className="font-semibold">{currentStartup.teamSize} people</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
+                  <MapPin className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Location</p>
+                    <p className="font-semibold">{currentStartup.location}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
+                  <Building2 className="w-5 h-5 text-orange-600" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Seeking</p>
+                    <p className="font-semibold">{currentStartup.fundingTarget}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Traction */}
+              <div className="p-4 bg-white rounded-lg mb-6">
+                <h4 className="font-semibold mb-2">Key Traction</h4>
+                <p className="text-muted-foreground">{currentStartup.traction}</p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4 mt-auto">
+                <Button
+                  onClick={() => handleSwipe(false)}
+                  variant="outline"
+                  size="lg"
+                  className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+                >
+                  <X className="w-5 h-5 mr-2" />
+                  Pass
+                </Button>
+                <Button
+                  onClick={() => handleSwipe(true)}
+                  size="lg"
+                  className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+                >
+                  <Heart className="w-5 h-5 mr-2" />
+                  Interested
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Quick Actions */}
+      <div className="flex gap-4">
+        <Button variant="outline" className="flex-1">
+          <Eye className="w-4 h-4 mr-2" />
+          View Full Profile
+        </Button>
+        <Button variant="outline" className="flex-1">
+          <MessageSquare className="w-4 h-4 mr-2" />
+          Send Message
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default InvestorSwipe;
