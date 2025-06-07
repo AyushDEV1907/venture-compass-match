@@ -14,7 +14,8 @@ const Marketplace = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sectorFilter, setSectorFilter] = useState("all");
   const [stageFilter, setStageFilter] = useState("all");
-  const [filteredItems, setFilteredItems] = useState<(StartupData | InvestorData)[]>([]);
+  const [filteredStartups, setFilteredStartups] = useState<StartupData[]>([]);
+  const [filteredInvestors, setFilteredInvestors] = useState<InvestorData[]>([]);
 
   useEffect(() => {
     const savedUserType = localStorage.getItem('userType') as 'startup' | 'investor' | null;
@@ -100,45 +101,55 @@ const Marketplace = () => {
   ];
 
   useEffect(() => {
-    const items = userType === 'startup' ? investors : startups;
-    let filtered = items;
+    if (userType === 'startup') {
+      // Filter investors for startups
+      let filtered = investors;
 
-    if (searchTerm) {
-      filtered = filtered.filter(item => 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      if (searchTerm) {
+        filtered = filtered.filter(investor => 
+          investor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          investor.description.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      if (sectorFilter !== "all") {
+        filtered = filtered.filter(investor => 
+          investor.sectors.includes(sectorFilter)
+        );
+      }
+
+      if (stageFilter !== "all") {
+        filtered = filtered.filter(investor => 
+          investor.stages.includes(stageFilter)
+        );
+      }
+
+      setFilteredInvestors(filtered);
+    } else if (userType === 'investor') {
+      // Filter startups for investors
+      let filtered = startups;
+
+      if (searchTerm) {
+        filtered = filtered.filter(startup => 
+          startup.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          startup.description.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      if (sectorFilter !== "all") {
+        filtered = filtered.filter(startup => 
+          startup.sector === sectorFilter
+        );
+      }
+
+      if (stageFilter !== "all") {
+        filtered = filtered.filter(startup => 
+          startup.stage === stageFilter
+        );
+      }
+
+      setFilteredStartups(filtered);
     }
-
-    if (sectorFilter !== "all") {
-      filtered = filtered.filter(item => {
-        if (userType === 'startup') {
-          // For investors, check if they invest in the selected sector
-          const investor = item as InvestorData;
-          return investor.sectors.includes(sectorFilter);
-        } else {
-          // For startups, check their sector
-          const startup = item as StartupData;
-          return startup.sector === sectorFilter;
-        }
-      });
-    }
-
-    if (stageFilter !== "all") {
-      filtered = filtered.filter(item => {
-        if (userType === 'startup') {
-          // For investors, check if they invest in the selected stage
-          const investor = item as InvestorData;
-          return investor.stages.includes(stageFilter);
-        } else {
-          // For startups, check their stage
-          const startup = item as StartupData;
-          return startup.stage === stageFilter;
-        }
-      });
-    }
-
-    setFilteredItems(filtered);
   }, [searchTerm, sectorFilter, stageFilter, userType]);
 
   if (!userType) {
@@ -158,6 +169,9 @@ const Marketplace = () => {
       </div>
     );
   }
+
+  // Get the appropriate filtered items based on user type
+  const currentItems = userType === 'startup' ? filteredInvestors : filteredStartups;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -230,7 +244,7 @@ const Marketplace = () => {
 
         {/* Results */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => {
+          {currentItems.map((item) => {
             const isInvestor = userType === 'startup';
             const investor = isInvestor ? item as InvestorData : null;
             const startup = !isInvestor ? item as StartupData : null;
@@ -319,7 +333,7 @@ const Marketplace = () => {
           })}
         </div>
 
-        {filteredItems.length === 0 && (
+        {currentItems.length === 0 && (
           <Card className="border-0 shadow-lg">
             <CardContent className="p-12 text-center">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
