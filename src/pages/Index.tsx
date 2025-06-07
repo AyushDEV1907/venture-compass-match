@@ -11,11 +11,12 @@ import InvestorDashboard from "@/components/InvestorDashboard";
 const Index = () => {
   const [userType, setUserType] = useState<'startup' | 'investor' | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showRegistration, setShowRegistration] = useState(false);
 
-  // Simulate login state - in real app this would come from auth context
   useEffect(() => {
     const savedUserType = localStorage.getItem('userType') as 'startup' | 'investor' | null;
     const savedLoginState = localStorage.getItem('isLoggedIn') === 'true';
+    
     if (savedUserType && savedLoginState) {
       setUserType(savedUserType);
       setIsLoggedIn(true);
@@ -24,28 +25,44 @@ const Index = () => {
 
   const handleUserTypeSelect = (type: 'startup' | 'investor') => {
     setUserType(type);
+    setShowRegistration(true);
+  };
+
+  const handleRegistrationComplete = () => {
     setIsLoggedIn(true);
-    localStorage.setItem('userType', type);
+    setShowRegistration(false);
+    localStorage.setItem('userType', userType!);
     localStorage.setItem('isLoggedIn', 'true');
   };
 
   const handleLogout = () => {
     setUserType(null);
     setIsLoggedIn(false);
+    setShowRegistration(false);
     localStorage.removeItem('userType');
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('startupProfile');
+    localStorage.removeItem('investorProfile');
+    localStorage.removeItem('investorMatches');
+    localStorage.removeItem('swipeLearning');
+    localStorage.removeItem('calibrationLearning');
+    localStorage.removeItem('investorCalibrated');
+    localStorage.removeItem('subscription');
   };
 
+  // Show dashboard if user is logged in
   if (isLoggedIn && userType) {
     return userType === 'startup' ? 
       <StartupDashboard onLogout={handleLogout} /> : 
       <InvestorDashboard onLogout={handleLogout} />;
   }
 
-  if (userType && !isLoggedIn) {
-    return <UserTypeSelection userType={userType} onComplete={() => setIsLoggedIn(true)} />;
+  // Show registration form if user type is selected but not logged in
+  if (userType && showRegistration) {
+    return <UserTypeSelection userType={userType} onComplete={handleRegistrationComplete} />;
   }
 
+  // Show landing page
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Hero Section */}
@@ -70,7 +87,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => setUserType('startup')}
+                onClick={() => handleUserTypeSelect('startup')}
               >
                 <Building2 className="w-5 h-5 mr-2" />
                 I'm a Startup
@@ -80,7 +97,7 @@ const Index = () => {
                 size="lg" 
                 variant="outline"
                 className="border-2 border-gradient-to-r from-blue-600 to-purple-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
-                onClick={() => setUserType('investor')}
+                onClick={() => handleUserTypeSelect('investor')}
               >
                 <DollarSign className="w-5 h-5 mr-2" />
                 I'm an Investor

@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Zap, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Check, Star, Zap, Crown, ArrowRight } from "lucide-react";
 
 interface SubscriptionPlansProps {
   currentPlan: string;
@@ -20,127 +20,105 @@ const SubscriptionPlans = ({ currentPlan, userType }: SubscriptionPlansProps) =>
       id: 'free',
       name: 'Free',
       price: '$0',
-      period: '/month',
-      icon: Star,
+      period: 'forever',
       description: 'Perfect for getting started',
-      features: userType === 'startup' ? [
-        '1 pitch deck upload',
-        '5 investor connections/month',
-        'Basic profile creation',
-        'Standard support',
-        'Public listing'
-      ] : [
-        '5 startup reviews/month',
+      icon: Star,
+      features: [
+        userType === 'investor' ? '5 startup views per month' : '5 investor views per month',
         'Basic matching algorithm',
         'Standard profile',
-        'Basic search filters',
-        'Community support'
+        'Email support',
+        'Basic analytics'
       ],
-      buttonText: 'Current Plan',
-      highlighted: false
+      limitations: [
+        'Limited matches',
+        'No priority support',
+        'Basic features only'
+      ]
     },
     {
       id: 'pro',
       name: 'Pro',
       price: '$29',
-      period: '/month',
+      period: 'per month',
+      description: 'For serious networking',
       icon: Zap,
-      description: 'For serious professionals',
-      features: userType === 'startup' ? [
-        '5 pitch deck uploads',
-        '50 investor connections/month',
-        'Advanced profile features',
-        'Priority support',
-        'Featured listing',
-        'Basic analytics',
-        'Direct messaging'
-      ] : [
-        '50 startup reviews/month',
-        'Advanced matching algorithm',
-        'Enhanced profile features',
-        'Advanced search filters',
-        'Priority support',
-        'Saved searches',
-        'Email notifications'
+      popular: true,
+      features: [
+        userType === 'investor' ? '50 startup views per month' : '50 investor views per month',
+        'Advanced AI matching',
+        'Priority in search results',
+        'Advanced analytics dashboard',
+        'Direct messaging',
+        'Email & chat support',
+        'Pitch deck upload (startups)',
+        'Due diligence tools (investors)'
       ],
-      buttonText: 'Upgrade to Pro',
-      highlighted: true
+      limitations: []
     },
     {
       id: 'premium',
       name: 'Premium',
       price: '$99',
-      period: '/month',
+      period: 'per month',
+      description: 'Maximum growth potential',
       icon: Crown,
-      description: 'Maximum potential unlocked',
-      features: userType === 'startup' ? [
-        'Unlimited pitch deck uploads',
-        'Unlimited investor connections',
-        'Premium profile features',
-        'White-glove support',
-        'Top-tier listing',
-        'Advanced analytics & insights',
-        'Video calls integration',
-        'Custom branding',
-        'API access'
-      ] : [
-        'Unlimited startup reviews',
+      features: [
+        'Unlimited views and matches',
         'AI-powered recommendations',
-        'Premium profile features',
-        'All search capabilities',
-        'White-glove support',
-        'Deal flow analytics',
-        'Custom deal alerts',
-        'Portfolio tracking',
-        'API access'
+        'Featured profile placement',
+        'Advanced analytics & insights',
+        'Priority customer support',
+        'Custom pitch presentations',
+        'Investment tracking tools',
+        'Network introduction services',
+        'Exclusive events access'
       ],
-      buttonText: 'Upgrade to Premium',
-      highlighted: false
+      limitations: []
     }
   ];
 
-  const handleUpgrade = (planId: string) => {
+  const handleUpgrade = async (planId: string) => {
     setIsUpgrading(true);
     
-    // Simulate payment processing
+    // Simulate upgrade process
     setTimeout(() => {
       localStorage.setItem('subscription', planId);
       setIsUpgrading(false);
+      
       toast({
         title: "Plan Upgraded! 🎉",
-        description: `You've successfully upgraded to ${planId.charAt(0).toUpperCase() + planId.slice(1)}!`,
+        description: `You've successfully upgraded to ${plans.find(p => p.id === planId)?.name}. Enjoy your new features!`
       });
-      // In a real app, this would reload the page or update the parent component
+      
+      // Refresh the page to show updated plan
       window.location.reload();
     }, 2000);
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
-        <p className="text-xl text-muted-foreground">
-          {userType === 'startup' 
-            ? 'Unlock more investor connections and advanced features'
-            : 'Discover more startups and get better matching'
-          }
+        <p className="text-muted-foreground text-lg">
+          Unlock more features and get better matches with our premium plans
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {plans.map((plan) => {
-          const IconComponent = plan.icon;
+          const Icon = plan.icon;
           const isCurrentPlan = currentPlan === plan.id;
           
           return (
             <Card 
               key={plan.id} 
               className={`relative border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${
-                plan.highlighted ? 'ring-2 ring-blue-600 scale-105' : ''
+                plan.popular ? 'ring-2 ring-blue-500 scale-105' : ''
               } ${isCurrentPlan ? 'bg-gradient-to-br from-blue-50 to-purple-50' : ''}`}
             >
-              {plan.highlighted && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 px-4 py-1">
                     Most Popular
                   </Badge>
@@ -148,103 +126,96 @@ const SubscriptionPlans = ({ currentPlan, userType }: SubscriptionPlansProps) =>
               )}
               
               {isCurrentPlan && (
-                <div className="absolute -top-4 right-4">
+                <div className="absolute -top-3 right-4">
                   <Badge className="bg-gradient-to-r from-green-600 to-blue-600 text-white border-0">
-                    Current
+                    Current Plan
                   </Badge>
                 </div>
               )}
 
-              <CardHeader className="text-center pb-8">
-                <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${
-                  plan.highlighted 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600' 
-                    : 'bg-gradient-to-r from-gray-600 to-gray-700'
+              <CardHeader className="text-center pb-6">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                  plan.id === 'free' ? 'bg-gradient-to-r from-gray-600 to-gray-700' :
+                  plan.id === 'pro' ? 'bg-gradient-to-r from-blue-600 to-purple-600' :
+                  'bg-gradient-to-r from-purple-600 to-pink-600'
                 }`}>
-                  <IconComponent className="w-8 h-8 text-white" />
+                  <Icon className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                <CardDescription className="text-lg">{plan.description}</CardDescription>
-                <div className="flex items-baseline justify-center mt-4">
+                <CardDescription className="text-base">{plan.description}</CardDescription>
+                <div className="mt-4">
                   <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-muted-foreground ml-2">{plan.period}</span>
+                  <span className="text-muted-foreground">/{plan.period}</span>
                 </div>
               </CardHeader>
 
-              <CardContent className="pt-0">
-                <ul className="space-y-3 mb-8">
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-green-700">Included Features</h4>
                   {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <div key={index} className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                       <span className="text-sm">{feature}</span>
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                </div>
 
-                <Button
-                  onClick={() => !isCurrentPlan && handleUpgrade(plan.id)}
-                  disabled={isCurrentPlan || isUpgrading}
-                  className={`w-full ${
-                    plan.highlighted
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white'
-                      : isCurrentPlan
-                      ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                      : 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white'
-                  }`}
-                  size="lg"
-                >
-                  {isUpgrading ? 'Processing...' : isCurrentPlan ? 'Current Plan' : plan.buttonText}
-                </Button>
+                {plan.limitations.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-orange-700">Limitations</h4>
+                    {plan.limitations.map((limitation, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="w-5 h-5 border border-orange-300 rounded mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-muted-foreground">{limitation}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="pt-4">
+                  {isCurrentPlan ? (
+                    <Button disabled className="w-full" size="lg">
+                      <Check className="w-4 h-4 mr-2" />
+                      Current Plan
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => handleUpgrade(plan.id)}
+                      disabled={isUpgrading}
+                      className={`w-full ${
+                        plan.id === 'free' ? 'bg-gradient-to-r from-gray-600 to-gray-700' :
+                        plan.id === 'pro' ? 'bg-gradient-to-r from-blue-600 to-purple-600' :
+                        'bg-gradient-to-r from-purple-600 to-pink-600'
+                      } text-white hover:opacity-90`}
+                      size="lg"
+                    >
+                      {isUpgrading ? (
+                        "Processing..."
+                      ) : (
+                        <>
+                          {plan.id === 'free' ? 'Downgrade' : 'Upgrade'}
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      {/* Feature Comparison */}
-      <Card className="border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle>Feature Comparison</CardTitle>
-          <CardDescription>See what's included in each plan</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3">Feature</th>
-                  <th className="text-center py-3">Free</th>
-                  <th className="text-center py-3">Pro</th>
-                  <th className="text-center py-3">Premium</th>
-                </tr>
-              </thead>
-              <tbody className="space-y-2">
-                <tr className="border-b">
-                  <td className="py-3">{userType === 'startup' ? 'Investor Connections' : 'Startup Reviews'}</td>
-                  <td className="text-center py-3">5/month</td>
-                  <td className="text-center py-3">50/month</td>
-                  <td className="text-center py-3">Unlimited</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3">Advanced Analytics</td>
-                  <td className="text-center py-3">❌</td>
-                  <td className="text-center py-3">✅</td>
-                  <td className="text-center py-3">✅</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3">Priority Support</td>
-                  <td className="text-center py-3">❌</td>
-                  <td className="text-center py-3">✅</td>
-                  <td className="text-center py-3">✅</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3">API Access</td>
-                  <td className="text-center py-3">❌</td>
-                  <td className="text-center py-3">❌</td>
-                  <td className="text-center py-3">✅</td>
-                </tr>
-              </tbody>
-            </table>
+      <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-purple-50">
+        <CardContent className="p-6">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold mb-2">Need a Custom Solution?</h3>
+            <p className="text-muted-foreground mb-4">
+              For enterprise customers or special requirements, we offer custom pricing and features.
+            </p>
+            <Button variant="outline" size="lg">
+              Contact Sales
+            </Button>
           </div>
         </CardContent>
       </Card>

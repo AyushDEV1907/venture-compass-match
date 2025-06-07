@@ -2,90 +2,57 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Target, Save } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { Settings, Target, DollarSign, MapPin, TrendingUp } from "lucide-react";
 
 const InvestorPreferences = () => {
   const { toast } = useToast();
   const [preferences, setPreferences] = useState({
     sectors: [] as string[],
     stages: [] as string[],
-    ticketSizeMin: [100000],
-    ticketSizeMax: [10000000],
+    minInvestment: [100000],
+    maxInvestment: [10000000],
     locations: [] as string[],
-    investmentTimeframe: '',
-    riskTolerance: '',
-    followOnCapacity: false,
-    leadInvestor: false,
-    boardSeat: false
+    riskTolerance: 'medium',
+    revenueRequirement: false,
+    teamSizeMin: [1],
+    autoNotifications: true
   });
 
   useEffect(() => {
-    const savedPreferences = localStorage.getItem('investorPreferences');
-    if (savedPreferences) {
-      setPreferences(prev => ({ ...prev, ...JSON.parse(savedPreferences) }));
+    const saved = localStorage.getItem('investorPreferences');
+    if (saved) {
+      setPreferences(JSON.parse(saved));
     }
   }, []);
 
-  const sectors = [
-    'FinTech', 'HealthTech', 'EdTech', 'SaaS', 'E-commerce', 
-    'AI/ML', 'BioTech', 'CleanTech', 'Gaming', 'Enterprise'
-  ];
-
-  const stages = [
-    'Pre-seed', 'Seed', 'Series A', 'Series B', 'Series C+'
-  ];
-
-  const locations = [
-    'San Francisco, CA', 'New York, NY', 'Boston, MA', 'Austin, TX',
-    'Seattle, WA', 'Los Angeles, CA', 'Chicago, IL', 'Remote/Global'
-  ];
-
-  const handleSectorToggle = (sector: string) => {
-    setPreferences(prev => ({
-      ...prev,
-      sectors: prev.sectors.includes(sector)
-        ? prev.sectors.filter(s => s !== sector)
-        : [...prev.sectors, sector]
-    }));
-  };
-
-  const handleStageToggle = (stage: string) => {
-    setPreferences(prev => ({
-      ...prev,
-      stages: prev.stages.includes(stage)
-        ? prev.stages.filter(s => s !== stage)
-        : [...prev.stages, stage]
-    }));
-  };
-
-  const handleLocationToggle = (location: string) => {
-    setPreferences(prev => ({
-      ...prev,
-      locations: prev.locations.includes(location)
-        ? prev.locations.filter(l => l !== location)
-        : [...prev.locations, location]
-    }));
-  };
-
-  const handleSave = () => {
+  const savePreferences = () => {
     localStorage.setItem('investorPreferences', JSON.stringify(preferences));
     toast({
       title: "Preferences Saved",
-      description: "Your investment preferences have been updated successfully.",
+      description: "Your investment preferences have been updated successfully."
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
+  const sectors = [
+    'FinTech', 'HealthTech', 'EdTech', 'AI/ML', 'SaaS', 
+    'E-commerce', 'BioTech', 'CleanTech', 'Gaming', 'Hardware'
+  ];
+
+  const stages = ['Pre-seed', 'Seed', 'Series A', 'Series B', 'Series C+'];
+  const locations = ['San Francisco, CA', 'New York, NY', 'Austin, TX', 'Boston, MA', 'Seattle, WA', 'Remote'];
+
+  const toggleArrayItem = (array: string[], item: string) => {
+    if (array.includes(item)) {
+      return array.filter(i => i !== item);
+    } else {
+      return [...array, item];
     }
-    return `$${(amount / 1000).toFixed(0)}K`;
   };
 
   return (
@@ -93,93 +60,86 @@ const InvestorPreferences = () => {
       <Card className="border-0 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5" />
+            <Settings className="w-5 h-5" />
             Investment Preferences
           </CardTitle>
           <CardDescription>
-            Configure your preferences to get better startup recommendations
+            Configure your investment criteria to get better startup recommendations
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-8">
-          {/* Sectors */}
+        <CardContent className="space-y-6">
+          {/* Preferred Sectors */}
           <div>
-            <Label className="text-base font-semibold mb-4 block">Preferred Sectors</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {sectors.map(sector => (
-                <div key={sector} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={sector}
-                    checked={preferences.sectors.includes(sector)}
-                    onCheckedChange={() => handleSectorToggle(sector)}
-                  />
-                  <Label htmlFor={sector} className="text-sm font-normal cursor-pointer">
-                    {sector}
-                  </Label>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {preferences.sectors.map(sector => (
-                <Badge key={sector} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+            <Label className="text-base font-medium mb-3 block">Preferred Sectors</Label>
+            <div className="flex flex-wrap gap-2">
+              {sectors.map((sector) => (
+                <Badge
+                  key={sector}
+                  variant={preferences.sectors.includes(sector) ? "default" : "outline"}
+                  className={`cursor-pointer transition-colors ${
+                    preferences.sectors.includes(sector) 
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
+                      : 'hover:bg-muted'
+                  }`}
+                  onClick={() => setPreferences(prev => ({
+                    ...prev,
+                    sectors: toggleArrayItem(prev.sectors, sector)
+                  }))}
+                >
                   {sector}
                 </Badge>
               ))}
             </div>
           </div>
 
-          {/* Stages */}
+          {/* Investment Stages */}
           <div>
-            <Label className="text-base font-semibold mb-4 block">Investment Stages</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {stages.map(stage => (
-                <div key={stage} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={stage}
-                    checked={preferences.stages.includes(stage)}
-                    onCheckedChange={() => handleStageToggle(stage)}
-                  />
-                  <Label htmlFor={stage} className="text-sm font-normal cursor-pointer">
-                    {stage}
-                  </Label>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {preferences.stages.map(stage => (
-                <Badge key={stage} variant="outline">
+            <Label className="text-base font-medium mb-3 block">Investment Stages</Label>
+            <div className="flex flex-wrap gap-2">
+              {stages.map((stage) => (
+                <Badge
+                  key={stage}
+                  variant={preferences.stages.includes(stage) ? "default" : "outline"}
+                  className={`cursor-pointer transition-colors ${
+                    preferences.stages.includes(stage) 
+                      ? 'bg-gradient-to-r from-green-600 to-blue-600 text-white' 
+                      : 'hover:bg-muted'
+                  }`}
+                  onClick={() => setPreferences(prev => ({
+                    ...prev,
+                    stages: toggleArrayItem(prev.stages, stage)
+                  }))}
+                >
                   {stage}
                 </Badge>
               ))}
             </div>
           </div>
 
-          {/* Investment Size */}
-          <div className="space-y-6">
-            <Label className="text-base font-semibold">Investment Ticket Size</Label>
-            
+          {/* Investment Range */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <div className="flex justify-between mb-2">
-                <Label className="text-sm">Minimum Investment</Label>
-                <span className="text-sm font-medium">{formatCurrency(preferences.ticketSizeMin[0])}</span>
-              </div>
+              <Label className="text-base font-medium mb-3 block">
+                <DollarSign className="w-4 h-4 inline mr-1" />
+                Minimum Investment: ${preferences.minInvestment[0].toLocaleString()}
+              </Label>
               <Slider
-                value={preferences.ticketSizeMin}
-                onValueChange={(value) => setPreferences(prev => ({ ...prev, ticketSizeMin: value }))}
+                value={preferences.minInvestment}
+                onValueChange={(value) => setPreferences(prev => ({ ...prev, minInvestment: value }))}
                 max={5000000}
                 min={10000}
                 step={10000}
                 className="w-full"
               />
             </div>
-
             <div>
-              <div className="flex justify-between mb-2">
-                <Label className="text-sm">Maximum Investment</Label>
-                <span className="text-sm font-medium">{formatCurrency(preferences.ticketSizeMax[0])}</span>
-              </div>
+              <Label className="text-base font-medium mb-3 block">
+                <DollarSign className="w-4 h-4 inline mr-1" />
+                Maximum Investment: ${preferences.maxInvestment[0].toLocaleString()}
+              </Label>
               <Slider
-                value={preferences.ticketSizeMax}
-                onValueChange={(value) => setPreferences(prev => ({ ...prev, ticketSizeMax: value }))}
+                value={preferences.maxInvestment}
+                onValueChange={(value) => setPreferences(prev => ({ ...prev, maxInvestment: value }))}
                 max={50000000}
                 min={100000}
                 step={100000}
@@ -188,97 +148,77 @@ const InvestorPreferences = () => {
             </div>
           </div>
 
+          {/* Risk Tolerance */}
+          <div>
+            <Label className="text-base font-medium mb-3 block">
+              <TrendingUp className="w-4 h-4 inline mr-1" />
+              Risk Tolerance
+            </Label>
+            <Select onValueChange={(value) => setPreferences(prev => ({ ...prev, riskTolerance: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder={preferences.riskTolerance} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low - Established companies with proven revenue</SelectItem>
+                <SelectItem value="medium">Medium - Growing companies with some traction</SelectItem>
+                <SelectItem value="high">High - Early-stage with high growth potential</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Locations */}
           <div>
-            <Label className="text-base font-semibold mb-4 block">Preferred Locations</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {locations.map(location => (
-                <div key={location} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={location}
-                    checked={preferences.locations.includes(location)}
-                    onCheckedChange={() => handleLocationToggle(location)}
-                  />
-                  <Label htmlFor={location} className="text-sm font-normal cursor-pointer">
-                    {location}
-                  </Label>
-                </div>
+            <Label className="text-base font-medium mb-3 block">
+              <MapPin className="w-4 h-4 inline mr-1" />
+              Preferred Locations
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {locations.map((location) => (
+                <Badge
+                  key={location}
+                  variant={preferences.locations.includes(location) ? "default" : "outline"}
+                  className={`cursor-pointer transition-colors ${
+                    preferences.locations.includes(location) 
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
+                      : 'hover:bg-muted'
+                  }`}
+                  onClick={() => setPreferences(prev => ({
+                    ...prev,
+                    locations: toggleArrayItem(prev.locations, location)
+                  }))}
+                >
+                  {location}
+                </Badge>
               ))}
             </div>
           </div>
 
-          {/* Investment Style */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="timeframe" className="text-base font-semibold">Investment Timeframe</Label>
-              <Select onValueChange={(value) => setPreferences(prev => ({ ...prev, investmentTimeframe: value }))}>
-                <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Select timeframe" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3-6months">3-6 months</SelectItem>
-                  <SelectItem value="6-12months">6-12 months</SelectItem>
-                  <SelectItem value="1-2years">1-2 years</SelectItem>
-                  <SelectItem value="2+ years">2+ years</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Additional Preferences */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="revenue-req">Require Existing Revenue</Label>
+              <Switch
+                id="revenue-req"
+                checked={preferences.revenueRequirement}
+                onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, revenueRequirement: checked }))}
+              />
             </div>
-
-            <div>
-              <Label htmlFor="risk" className="text-base font-semibold">Risk Tolerance</Label>
-              <Select onValueChange={(value) => setPreferences(prev => ({ ...prev, riskTolerance: value }))}>
-                <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Select risk level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="conservative">Conservative</SelectItem>
-                  <SelectItem value="moderate">Moderate</SelectItem>
-                  <SelectItem value="aggressive">Aggressive</SelectItem>
-                  <SelectItem value="very-aggressive">Very Aggressive</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="auto-notifications">Auto Notifications for Matches</Label>
+              <Switch
+                id="auto-notifications"
+                checked={preferences.autoNotifications}
+                onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, autoNotifications: checked }))}
+              />
             </div>
           </div>
 
-          {/* Investment Preferences */}
-          <div>
-            <Label className="text-base font-semibold mb-4 block">Investment Style</Label>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="followOn"
-                  checked={preferences.followOnCapacity}
-                  onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, followOnCapacity: !!checked }))}
-                />
-                <Label htmlFor="followOn" className="text-sm font-normal cursor-pointer">
-                  I have capacity for follow-on investments
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="leadInvestor"
-                  checked={preferences.leadInvestor}
-                  onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, leadInvestor: !!checked }))}
-                />
-                <Label htmlFor="leadInvestor" className="text-sm font-normal cursor-pointer">
-                  Open to being a lead investor
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="boardSeat"
-                  checked={preferences.boardSeat}
-                  onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, boardSeat: !!checked }))}
-                />
-                <Label htmlFor="boardSeat" className="text-sm font-normal cursor-pointer">
-                  Interested in board seat opportunities
-                </Label>
-              </div>
-            </div>
-          </div>
-
-          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white" size="lg">
-            <Save className="w-4 h-4 mr-2" />
+          <Button 
+            onClick={savePreferences}
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+            size="lg"
+          >
+            <Target className="w-4 h-4 mr-2" />
             Save Preferences
           </Button>
         </CardContent>

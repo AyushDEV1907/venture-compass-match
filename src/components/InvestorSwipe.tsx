@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, Building2, MapPin, Users, TrendingUp, Eye, MessageSquare } from "lucide-react";
+import { Heart, X, Building2, MapPin, Users, TrendingUp, Eye, MessageSquare, Brain, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { recommendationEngine } from "@/utils/recommendationEngine";
 
 interface StartupData {
   id: number;
@@ -18,6 +19,7 @@ interface StartupData {
   revenue: string;
   traction: string;
   logo: string;
+  recommendationScore?: number;
 }
 
 interface InvestorSwipeProps {
@@ -29,6 +31,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
   const [currentStartup, setCurrentStartup] = useState<StartupData | null>(null);
   const [swipeCount, setSwipeCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [recommendationReason, setRecommendationReason] = useState("");
 
   const demoStartups: StartupData[] = [
     {
@@ -95,6 +98,45 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
       revenue: "$8K MRR",
       traction: "20+ financial institutions interested, MVP launched",
       logo: "🔒"
+    },
+    {
+      id: 6,
+      name: "AgriTech Solutions",
+      description: "IoT-based precision agriculture platform helping farmers optimize crop yields and reduce water usage by up to 30%.",
+      sector: "AgTech",
+      stage: "Seed",
+      fundingTarget: "$1.2M",
+      location: "Austin, TX",
+      teamSize: "10",
+      revenue: "$35K MRR",
+      traction: "200+ farms, 50K+ acres monitored",
+      logo: "🚜"
+    },
+    {
+      id: 7,
+      name: "CyberShield Pro",
+      description: "AI-driven cybersecurity platform providing real-time threat detection and automated response for enterprise networks.",
+      sector: "Cybersecurity",
+      stage: "Series A",
+      fundingTarget: "$4M",
+      location: "San Francisco, CA",
+      teamSize: "18",
+      revenue: "$200K MRR",
+      traction: "100+ enterprise clients, 99.9% threat detection rate",
+      logo: "🛡️"
+    },
+    {
+      id: 8,
+      name: "RetailBot",
+      description: "Autonomous retail analytics platform using computer vision to track inventory and customer behavior in real-time.",
+      sector: "Retail Tech",
+      stage: "Seed",
+      fundingTarget: "$2.5M",
+      location: "New York, NY",
+      teamSize: "14",
+      revenue: "$75K MRR",
+      traction: "50+ retail stores, 95% accuracy in inventory tracking",
+      logo: "🛒"
     }
   ];
 
@@ -104,10 +146,25 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
 
   const loadNextStartup = () => {
     setIsLoading(true);
-    // Simulate API call delay
+    
     setTimeout(() => {
-      const randomStartup = demoStartups[Math.floor(Math.random() * demoStartups.length)];
-      setCurrentStartup(randomStartup);
+      // Get AI-recommended startups
+      const recommendations = recommendationEngine.getRecommendedStartups(demoStartups, 3);
+      
+      // Mix in some random startups for variety (80% recommended, 20% random)
+      const shouldUseRecommendation = Math.random() < 0.8;
+      let selectedStartup: StartupData;
+      
+      if (shouldUseRecommendation && recommendations.length > 0) {
+        selectedStartup = recommendations[Math.floor(Math.random() * Math.min(3, recommendations.length))];
+        const reason = recommendationEngine.getRecommendationReason(selectedStartup);
+        setRecommendationReason(reason);
+      } else {
+        selectedStartup = demoStartups[Math.floor(Math.random() * demoStartups.length)];
+        setRecommendationReason("");
+      }
+      
+      setCurrentStartup(selectedStartup);
       setIsLoading(false);
     }, 500);
   };
@@ -126,18 +183,8 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
       return;
     }
 
-    // Simulate learning from user preference
-    const preferences = JSON.parse(localStorage.getItem('investorPreferences') || '{}');
-    const newPreference = {
-      startupId: currentStartup.id,
-      interested,
-      sector: currentStartup.sector,
-      stage: currentStartup.stage,
-      timestamp: new Date().toISOString()
-    };
-    
-    const existingLearnings = JSON.parse(localStorage.getItem('swipeLearning') || '[]');
-    localStorage.setItem('swipeLearning', JSON.stringify([...existingLearnings, newPreference]));
+    // Log interaction for learning
+    recommendationEngine.logInteraction(currentStartup, interested);
 
     setSwipeCount(prev => prev + 1);
     
@@ -151,7 +198,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
       });
     } else {
       toast({
-        title: "Passed",
+        title: "Learning from your feedback",
         description: "We'll use this to improve your recommendations.",
       });
     }
@@ -194,9 +241,28 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
         <Badge variant="outline">{getSearchesRemaining()}</Badge>
       </div>
 
+      {/* AI Recommendation Notice */}
+      {recommendationReason && (
+        <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <Brain className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-blue-700 mb-1 flex items-center gap-2">
+                  AI Recommendation
+                  <Sparkles className="w-4 h-4" />
+                </h4>
+                <p className="text-sm text-blue-600">{recommendationReason}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border-0 shadow-2xl overflow-hidden">
         <div className="relative h-[600px]">
-          {/* Startup Card */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 p-6">
             <div className="h-full flex flex-col">
               {/* Header */}
@@ -211,6 +277,11 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
                       {currentStartup.sector}
                     </Badge>
                     <Badge variant="outline">{currentStartup.stage}</Badge>
+                    {currentStartup.recommendationScore && (
+                      <Badge className="bg-gradient-to-r from-green-600 to-blue-600 text-white border-0">
+                        {currentStartup.recommendationScore}% match
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>
