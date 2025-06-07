@@ -7,30 +7,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, Building2, DollarSign, MapPin, Users, TrendingUp, Heart, MessageSquare, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { StartupData, InvestorData } from "@/types";
 
 const Marketplace = () => {
   const [userType, setUserType] = useState<'startup' | 'investor' | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sectorFilter, setSectorFilter] = useState("all");
   const [stageFilter, setStageFilter] = useState("all");
-  const [filteredItems, setFilteredItems] = useState<any[]>([]);
+  const [filteredItems, setFilteredItems] = useState<(StartupData | InvestorData)[]>([]);
 
   useEffect(() => {
     const savedUserType = localStorage.getItem('userType') as 'startup' | 'investor' | null;
     setUserType(savedUserType);
   }, []);
 
-  const startups = [
+  const startups: StartupData[] = [
     {
       id: 1,
       name: "TechFlow AI",
       description: "Revolutionary AI-powered workflow automation platform that helps businesses streamline operations.",
       sector: "AI/ML",
       stage: "Series A",
-      seeking: "$2M",
+      fundingTarget: "$2M",
       location: "San Francisco, CA",
-      team: "12",
+      teamSize: "12",
       revenue: "$50K MRR",
+      traction: "500+ enterprise customers, 300% YoY growth",
       logo: "🤖"
     },
     {
@@ -39,10 +41,11 @@ const Marketplace = () => {
       description: "Sustainable energy startup developing next-generation solar panel technology.",
       sector: "CleanTech",
       stage: "Seed",
-      seeking: "$1.5M",
+      fundingTarget: "$1.5M",
       location: "Austin, TX",
-      team: "8",
+      teamSize: "8",
       revenue: "$25K MRR",
+      traction: "50+ installations, partnerships with 3 major utilities",
       logo: "🌱"
     },
     {
@@ -51,15 +54,16 @@ const Marketplace = () => {
       description: "Telemedicine platform connecting patients with specialists globally.",
       sector: "HealthTech",
       stage: "Series A",
-      seeking: "$3M",
+      fundingTarget: "$3M",
       location: "Boston, MA",
-      team: "25",
+      teamSize: "25",
       revenue: "$120K MRR",
+      traction: "10K+ patients served, 200+ doctors on platform",
       logo: "🏥"
     }
   ];
 
-  const investors = [
+  const investors: InvestorData[] = [
     {
       id: 1,
       name: "Venture Partners",
@@ -109,9 +113,13 @@ const Marketplace = () => {
     if (sectorFilter !== "all") {
       filtered = filtered.filter(item => {
         if (userType === 'startup') {
-          return item.sectors.includes(sectorFilter);
+          // For investors, check if they invest in the selected sector
+          const investor = item as InvestorData;
+          return investor.sectors.includes(sectorFilter);
         } else {
-          return item.sector === sectorFilter;
+          // For startups, check their sector
+          const startup = item as StartupData;
+          return startup.sector === sectorFilter;
         }
       });
     }
@@ -119,9 +127,13 @@ const Marketplace = () => {
     if (stageFilter !== "all") {
       filtered = filtered.filter(item => {
         if (userType === 'startup') {
-          return item.stages.includes(stageFilter);
+          // For investors, check if they invest in the selected stage
+          const investor = item as InvestorData;
+          return investor.stages.includes(stageFilter);
         } else {
-          return item.stage === stageFilter;
+          // For startups, check their stage
+          const startup = item as StartupData;
+          return startup.stage === stageFilter;
         }
       });
     }
@@ -218,87 +230,93 @@ const Marketplace = () => {
 
         {/* Results */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => (
-            <Card key={item.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-xl">
-                    {item.logo}
-                  </div>
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{item.name}</CardTitle>
-                    <div className="flex gap-2 mt-1">
-                      {userType === 'startup' ? (
-                        <>
-                          {item.sectors.map((sector: string) => (
-                            <Badge key={sector} variant="outline" className="text-xs">
-                              {sector}
+          {filteredItems.map((item) => {
+            const isInvestor = userType === 'startup';
+            const investor = isInvestor ? item as InvestorData : null;
+            const startup = !isInvestor ? item as StartupData : null;
+
+            return (
+              <Card key={item.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-xl">
+                      {item.logo}
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">{item.name}</CardTitle>
+                      <div className="flex gap-2 mt-1">
+                        {isInvestor && investor ? (
+                          <>
+                            {investor.sectors.map((sector: string) => (
+                              <Badge key={sector} variant="outline" className="text-xs">
+                                {sector}
+                              </Badge>
+                            ))}
+                          </>
+                        ) : startup ? (
+                          <>
+                            <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+                              {startup.sector}
                             </Badge>
-                          ))}
-                        </>
-                      ) : (
-                        <>
-                          <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
-                            {item.sector}
-                          </Badge>
-                          <Badge variant="outline">{item.stage}</Badge>
-                        </>
-                      )}
+                            <Badge variant="outline">{startup.stage}</Badge>
+                          </>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <CardDescription className="line-clamp-2">
-                  {item.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {userType === 'startup' ? (
-                    <>
-                      <div className="flex items-center gap-2 text-sm">
-                        <DollarSign className="w-4 h-4 text-green-600" />
-                        <span>Ticket Size: {item.ticketSize}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Building2 className="w-4 h-4 text-blue-600" />
-                        <span>Portfolio: {item.portfolio}</span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-2 text-sm">
-                        <TrendingUp className="w-4 h-4 text-green-600" />
-                        <span>Revenue: {item.revenue}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Users className="w-4 h-4 text-blue-600" />
-                        <span>Team: {item.team} people</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <DollarSign className="w-4 h-4 text-purple-600" />
-                        <span>Seeking: {item.seeking}</span>
-                      </div>
-                    </>
-                  )}
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="w-4 h-4 text-orange-600" />
-                    <span>{item.location}</span>
+                  <CardDescription className="line-clamp-2">
+                    {item.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {isInvestor && investor ? (
+                      <>
+                        <div className="flex items-center gap-2 text-sm">
+                          <DollarSign className="w-4 h-4 text-green-600" />
+                          <span>Ticket Size: {investor.ticketSize}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Building2 className="w-4 h-4 text-blue-600" />
+                          <span>Portfolio: {investor.portfolio}</span>
+                        </div>
+                      </>
+                    ) : startup ? (
+                      <>
+                        <div className="flex items-center gap-2 text-sm">
+                          <TrendingUp className="w-4 h-4 text-green-600" />
+                          <span>Revenue: {startup.revenue}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Users className="w-4 h-4 text-blue-600" />
+                          <span>Team: {startup.teamSize} people</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <DollarSign className="w-4 h-4 text-purple-600" />
+                          <span>Seeking: {startup.fundingTarget}</span>
+                        </div>
+                      </>
+                    ) : null}
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="w-4 h-4 text-orange-600" />
+                      <span>{item.location}</span>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex gap-2 mt-4">
-                  <Button size="sm" className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                    <Heart className="w-4 h-4 mr-2" />
-                    Interested
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1">
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    Message
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  
+                  <div className="flex gap-2 mt-4">
+                    <Button size="sm" className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                      <Heart className="w-4 h-4 mr-2" />
+                      Interested
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex-1">
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Message
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {filteredItems.length === 0 && (

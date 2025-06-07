@@ -1,4 +1,6 @@
 
+import { StartupData } from "../types";
+
 interface CalibrationData {
   startupId: number;
   rating: number;
@@ -16,17 +18,6 @@ interface PreferenceData {
   locations: string[];
   riskTolerance: string;
   revenueRequirement: boolean;
-}
-
-interface StartupData {
-  id: number;
-  name: string;
-  sector: string;
-  stage: string;
-  fundingTarget: string;
-  location: string;
-  revenue: string;
-  [key: string]: any;
 }
 
 export class RecommendationEngine {

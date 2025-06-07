@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,21 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, X, Building2, MapPin, Users, TrendingUp, Eye, MessageSquare, Brain, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { recommendationEngine } from "@/utils/recommendationEngine";
-
-interface StartupData {
-  id: number;
-  name: string;
-  description: string;
-  sector: string;
-  stage: string;
-  fundingTarget: string;
-  location: string;
-  teamSize: string;
-  revenue: string;
-  traction: string;
-  logo: string;
-  recommendationScore?: number;
-}
+import { StartupData } from "@/types";
 
 interface InvestorSwipeProps {
   subscription: string;
