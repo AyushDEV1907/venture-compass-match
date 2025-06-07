@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Building2, Users, FileText, MessageSquare, Star, Upload, Eye, TrendingUp, LogOut } from "lucide-react";
+import { Building2, Users, FileText, MessageSquare, Star, Upload, Eye, TrendingUp, LogOut, DollarSign } from "lucide-react";
+import { Link } from "react-router-dom";
 import StartupProfile from "@/components/StartupProfile";
 import StartupPitchDeck from "@/components/StartupPitchDeck";
 import StartupMatches from "@/components/StartupMatches";
@@ -55,6 +56,12 @@ const StartupDashboard = ({ onLogout }: StartupDashboardProps) => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Link to="/marketplace">
+                <Button variant="outline">
+                  <DollarSign className="w-4 h-4 mr-2" />
+                  Browse Investors
+                </Button>
+              </Link>
               <Badge 
                 className={`${
                   subscription === 'premium' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :

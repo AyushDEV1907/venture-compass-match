@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Users, TrendingUp, MessageSquare, Star, Eye, Target, LogOut } from "lucide-react";
+import { DollarSign, Users, TrendingUp, MessageSquare, Star, Eye, Target, LogOut, Building2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import InvestorPreferences from "@/components/InvestorPreferences";
 import InvestorCalibration from "@/components/InvestorCalibration";
 import InvestorSwipe from "@/components/InvestorSwipe";
+import InvestorMatches from "@/components/InvestorMatches";
 import SubscriptionPlans from "@/components/SubscriptionPlans";
 
 interface InvestorDashboardProps {
@@ -74,6 +76,12 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Link to="/marketplace">
+                <Button variant="outline">
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Browse Marketplace
+                </Button>
+              </Link>
               <Badge 
                 className={`${
                   subscription === 'premium' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :
@@ -137,6 +145,7 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
         <Tabs defaultValue="discover" className="space-y-6">
           <TabsList className="bg-white border shadow-sm">
             <TabsTrigger value="discover">Discover</TabsTrigger>
+            <TabsTrigger value="matches">My Matches</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
             <TabsTrigger value="calibration">Calibration</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
@@ -174,25 +183,29 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
 
                 <Card className="border-0 shadow-lg">
                   <CardHeader>
-                    <CardTitle>Recent Matches</CardTitle>
+                    <CardTitle>Recent Activity</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                       <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                      <span className="text-sm">TechFlow - AI SaaS Platform</span>
+                      <span className="text-sm">Matched with TechFlow AI</span>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
                       <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                      <span className="text-sm">MedLink - HealthTech Startup</span>
+                      <span className="text-sm">New message from MedLink</span>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
                       <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                      <span className="text-sm">EcoTech - CleanTech Solution</span>
+                      <span className="text-sm">Profile view from EcoTech</span>
                     </div>
                   </CardContent>
                 </Card>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="matches">
+            <InvestorMatches />
           </TabsContent>
 
           <TabsContent value="preferences">
