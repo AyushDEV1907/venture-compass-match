@@ -9,7 +9,147 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      investors: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          location: string | null
+          logo: string | null
+          name: string
+          portfolio: string | null
+          sectors: string[] | null
+          stages: string[] | null
+          ticket_size: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          logo?: string | null
+          name: string
+          portfolio?: string | null
+          sectors?: string[] | null
+          stages?: string[] | null
+          ticket_size?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          logo?: string | null
+          name?: string
+          portfolio?: string | null
+          sectors?: string[] | null
+          stages?: string[] | null
+          ticket_size?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          company: string | null
+          created_at: string
+          description: string | null
+          email: string
+          id: string
+          location: string | null
+          name: string
+          sector: string | null
+          stage: string | null
+          ticket_size: string | null
+          updated_at: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          email: string
+          id: string
+          location?: string | null
+          name: string
+          sector?: string | null
+          stage?: string | null
+          ticket_size?: string | null
+          updated_at?: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string
+          id?: string
+          location?: string | null
+          name?: string
+          sector?: string | null
+          stage?: string | null
+          ticket_size?: string | null
+          updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Relationships: []
+      }
+      startups: {
+        Row: {
+          created_at: string
+          description: string | null
+          funding_target: string | null
+          id: string
+          location: string | null
+          logo: string | null
+          name: string
+          revenue: string | null
+          sector: string
+          stage: string
+          team_size: string | null
+          traction: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          funding_target?: string | null
+          id?: string
+          location?: string | null
+          logo?: string | null
+          name: string
+          revenue?: string | null
+          sector: string
+          stage: string
+          team_size?: string | null
+          traction?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          funding_target?: string | null
+          id?: string
+          location?: string | null
+          logo?: string | null
+          name?: string
+          revenue?: string | null
+          sector?: string
+          stage?: string
+          team_size?: string | null
+          traction?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +158,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_type: "startup" | "investor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +273,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_type: ["startup", "investor"],
+    },
   },
 } as const

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DollarSign, Users, TrendingUp, MessageSquare, Star, Eye, Target, LogOut, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/components/AuthContext";
 import InvestorPreferences from "@/components/InvestorPreferences";
 import InvestorCalibration from "@/components/InvestorCalibration";
 import InvestorSwipe from "@/components/InvestorSwipe";
@@ -17,23 +18,22 @@ interface InvestorDashboardProps {
 }
 
 const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
-  const [profile, setProfile] = useState<any>(null);
+  const { signOut, userProfile } = useAuth();
   const [subscription, setSubscription] = useState('free');
   const [isCalibrated, setIsCalibrated] = useState(false);
 
   useEffect(() => {
-    // Load investor profile from localStorage
-    const savedProfile = localStorage.getItem('investorProfile');
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
-    }
-    
     const savedSubscription = localStorage.getItem('subscription') || 'free';
     setSubscription(savedSubscription);
 
     const calibrationStatus = localStorage.getItem('investorCalibrated') === 'true';
     setIsCalibrated(calibrationStatus);
   }, []);
+
+  const handleLogout = async () => {
+    await signOut();
+    onLogout();
+  };
 
   const stats = [
     { label: 'Startups Reviewed', value: 127, icon: Eye, change: '+23' },
@@ -71,7 +71,7 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
               <div>
                 <h1 className="text-2xl font-bold">Investor Dashboard</h1>
                 <p className="text-muted-foreground">
-                  Welcome back, {profile?.company || 'Investor'}!
+                  Welcome back, {userProfile?.company || 'Investor'}!
                 </p>
               </div>
             </div>
@@ -91,7 +91,7 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
               >
                 {subscription.toUpperCase()} - {getSearchLimit()}
               </Badge>
-              <Button variant="outline" onClick={onLogout}>
+              <Button variant="outline" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
               </Button>
