@@ -6,6 +6,8 @@ import { Heart, X, Building2, MapPin, Users, TrendingUp, Eye, MessageSquare, Bra
 import { useToast } from "@/hooks/use-toast";
 import { recommendationEngine } from "@/utils/recommendationEngine";
 import { StartupData } from "@/types";
+import StartupProfileModal from "@/components/StartupProfileModal";
+import ChatModal from "@/components/ChatModal";
 
 interface InvestorSwipeProps {
   subscription: string;
@@ -17,6 +19,8 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
   const [swipeCount, setSwipeCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [recommendationReason, setRecommendationReason] = useState("");
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   const demoStartups: StartupData[] = [
     {
@@ -191,6 +195,14 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
     loadNextStartup();
   };
 
+  const handleViewProfile = () => {
+    setShowProfileModal(true);
+  };
+
+  const handleSendMessage = () => {
+    setShowChatModal(true);
+  };
+
   const getSearchesRemaining = () => {
     const maxSwipes = subscription === 'free' ? 5 : subscription === 'pro' ? 50 : 999;
     return subscription === 'premium' ? 'Unlimited' : `${Math.max(0, maxSwipes - swipeCount)} remaining`;
@@ -341,15 +353,32 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
 
       {/* Quick Actions */}
       <div className="flex gap-4">
-        <Button variant="outline" className="flex-1">
+        <Button variant="outline" className="flex-1" onClick={handleViewProfile}>
           <Eye className="w-4 h-4 mr-2" />
           View Full Profile
         </Button>
-        <Button variant="outline" className="flex-1">
+        <Button variant="outline" className="flex-1" onClick={handleSendMessage}>
           <MessageSquare className="w-4 h-4 mr-2" />
           Send Message
         </Button>
       </div>
+
+      {/* Modals */}
+      {currentStartup && (
+        <>
+          <StartupProfileModal
+            startup={currentStartup}
+            isOpen={showProfileModal}
+            onClose={() => setShowProfileModal(false)}
+            onMessage={handleSendMessage}
+          />
+          <ChatModal
+            recipient={currentStartup}
+            isOpen={showChatModal}
+            onClose={() => setShowChatModal(false)}
+          />
+        </>
+      )}
     </div>
   );
 };
