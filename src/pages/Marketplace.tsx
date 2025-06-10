@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Building2, Users, Search, Filter, MapPin, TrendingUp, DollarSign, Star } from "lucide-react";
+import { Link } from "react-router-dom";
 import { StartupData, InvestorData } from "@/types";
 import StartupProfileModal from "@/components/StartupProfileModal";
 import InvestorProfileModal from "@/components/InvestorProfileModal";
@@ -162,9 +163,11 @@ const Marketplace = () => {
             <CardDescription>Please log in to access the marketplace</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => window.location.href = '/'} className="w-full">
-              Go to Login
-            </Button>
+            <Link to="/">
+              <Button className="w-full">
+                Go to Login
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -188,9 +191,11 @@ const Marketplace = () => {
                 </p>
               </div>
             </div>
-            <Button onClick={() => window.location.href = '/'} variant="outline">
-              Back to Dashboard
-            </Button>
+            <Link to="/">
+              <Button variant="outline">
+                Back to Dashboard
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
