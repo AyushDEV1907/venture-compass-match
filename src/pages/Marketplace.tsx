@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +23,7 @@ const Marketplace = () => {
 
   const demoStartups: StartupData[] = [
     {
-      id: 1,
+      id: "1",
       name: "TechFlow AI",
       description: "Revolutionary AI-powered workflow automation platform that helps businesses streamline their operations and increase productivity by 40%.",
       sector: "AI/ML",
@@ -37,7 +36,7 @@ const Marketplace = () => {
       logo: "🤖"
     },
     {
-      id: 2,
+      id: "2",
       name: "EcoCharge",
       description: "Sustainable energy startup developing next-generation solar panel technology with 35% higher efficiency than traditional panels.",
       sector: "CleanTech",
@@ -50,7 +49,7 @@ const Marketplace = () => {
       logo: "🌱"
     },
     {
-      id: 3,
+      id: "3",
       name: "MedLink Pro",
       description: "Telemedicine platform connecting patients with specialists globally, reducing wait times by 80% and improving healthcare accessibility.",
       sector: "HealthTech",
@@ -63,7 +62,7 @@ const Marketplace = () => {
       logo: "🏥"
     },
     {
-      id: 4,
+      id: "4",
       name: "EduSphere",
       description: "Interactive learning platform using VR/AR technology to create immersive educational experiences for K-12 students.",
       sector: "EdTech",
@@ -76,7 +75,7 @@ const Marketplace = () => {
       logo: "🎓"
     },
     {
-      id: 5,
+      id: "5",
       name: "FinSecure",
       description: "Blockchain-based financial security platform providing real-time fraud detection and prevention for digital transactions.",
       sector: "FinTech",
@@ -92,7 +91,7 @@ const Marketplace = () => {
 
   const demoInvestors: InvestorData[] = [
     {
-      id: 1,
+      id: "1",
       name: "TechVentures Capital",
       description: "Early-stage venture capital firm focused on AI, SaaS, and emerging technologies with $50M AUM.",
       sectors: ["AI/ML", "SaaS", "FinTech"],
@@ -103,7 +102,7 @@ const Marketplace = () => {
       logo: "💰"
     },
     {
-      id: 2,
+      id: "2",
       name: "Green Impact Fund",
       description: "Impact investment fund specializing in climate tech and sustainable energy solutions.",
       sectors: ["CleanTech", "Energy", "Sustainability"],
@@ -114,7 +113,7 @@ const Marketplace = () => {
       logo: "🌍"
     },
     {
-      id: 3,
+      id: "3",
       name: "Healthcare Innovation Partners",
       description: "Healthcare-focused investment firm backing the next generation of medical technology companies.",
       sectors: ["HealthTech", "BioTech", "MedTech"],

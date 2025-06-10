@@ -24,7 +24,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
 
   const demoStartups: StartupData[] = [
     {
-      id: 1,
+      id: "1",
       name: "TechFlow AI",
       description: "Revolutionary AI-powered workflow automation platform that helps businesses streamline their operations and increase productivity by 40%.",
       sector: "AI/ML",
@@ -37,7 +37,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
       logo: "🤖"
     },
     {
-      id: 2,
+      id: "2",
       name: "EcoCharge",
       description: "Sustainable energy startup developing next-generation solar panel technology with 35% higher efficiency than traditional panels.",
       sector: "CleanTech",
@@ -50,7 +50,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
       logo: "🌱"
     },
     {
-      id: 3,
+      id: "3",
       name: "MedLink Pro",
       description: "Telemedicine platform connecting patients with specialists globally, reducing wait times by 80% and improving healthcare accessibility.",
       sector: "HealthTech",
@@ -63,7 +63,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
       logo: "🏥"
     },
     {
-      id: 4,
+      id: "4",
       name: "EduSphere",
       description: "Interactive learning platform using VR/AR technology to create immersive educational experiences for K-12 students.",
       sector: "EdTech",
@@ -76,7 +76,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
       logo: "🎓"
     },
     {
-      id: 5,
+      id: "5",
       name: "FinSecure",
       description: "Blockchain-based financial security platform providing real-time fraud detection and prevention for digital transactions.",
       sector: "FinTech",
@@ -89,7 +89,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
       logo: "🔒"
     },
     {
-      id: 6,
+      id: "6",
       name: "AgriTech Solutions",
       description: "IoT-based precision agriculture platform helping farmers optimize crop yields and reduce water usage by up to 30%.",
       sector: "AgTech",
@@ -102,7 +102,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
       logo: "🚜"
     },
     {
-      id: 7,
+      id: "7",
       name: "CyberShield Pro",
       description: "AI-driven cybersecurity platform providing real-time threat detection and automated response for enterprise networks.",
       sector: "Cybersecurity",
@@ -115,7 +115,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
       logo: "🛡️"
     },
     {
-      id: 8,
+      id: "8",
       name: "RetailBot",
       description: "Autonomous retail analytics platform using computer vision to track inventory and customer behavior in real-time.",
       sector: "Retail Tech",
