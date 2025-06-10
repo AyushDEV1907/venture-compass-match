@@ -6,7 +6,7 @@ import InvestorDashboard from "@/components/InvestorDashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, TrendingUp, Zap, Star, ArrowRight, Building2, DollarSign } from "lucide-react";
+import { Users, TrendingUp, Zap, Star, Building2 } from "lucide-react";
 
 const Index = () => {
   const { user, userProfile, loading } = useAuth();
@@ -24,11 +24,16 @@ const Index = () => {
     );
   }
 
-  // Show dashboard if user is logged in
+  // Show dashboard if user is logged in and profile exists
   if (user && userProfile) {
-    return userProfile.user_type === 'startup' ? 
-      <StartupDashboard onLogout={() => {}} /> : 
-      <InvestorDashboard onLogout={() => {}} />;
+    try {
+      return userProfile.user_type === 'startup' ? 
+        <StartupDashboard onLogout={() => {}} /> : 
+        <InvestorDashboard onLogout={() => {}} />;
+    } catch (error) {
+      console.error('Error rendering dashboard:', error);
+      return <AuthPage />;
+    }
   }
 
   // Show auth page if user needs to login/signup

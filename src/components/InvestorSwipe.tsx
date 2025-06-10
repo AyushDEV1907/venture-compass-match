@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -130,32 +131,53 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
   ];
 
   useEffect(() => {
-    loadNextStartup();
+    // Load initial startup data immediately without loading state for first load
+    const initialStartup = demoStartups[Math.floor(Math.random() * demoStartups.length)];
+    setCurrentStartup(initialStartup);
+    
+    // Load any existing swipe count from localStorage
+    const savedSwipeCount = localStorage.getItem('investorSwipeCount');
+    if (savedSwipeCount) {
+      setSwipeCount(parseInt(savedSwipeCount, 10));
+    }
   }, []);
 
   const loadNextStartup = () => {
     setIsLoading(true);
     
-    setTimeout(() => {
-      // Get AI-recommended startups
-      const recommendations = recommendationEngine.getRecommendedStartups(demoStartups, 3);
-      
-      // Mix in some random startups for variety (80% recommended, 20% random)
-      const shouldUseRecommendation = Math.random() < 0.8;
-      let selectedStartup: StartupData;
-      
-      if (shouldUseRecommendation && recommendations.length > 0) {
-        selectedStartup = recommendations[Math.floor(Math.random() * Math.min(3, recommendations.length))];
-        const reason = recommendationEngine.getRecommendationReason(selectedStartup);
-        setRecommendationReason(reason);
-      } else {
-        selectedStartup = demoStartups[Math.floor(Math.random() * demoStartups.length)];
+    // Reduce timeout and add error handling to prevent stuck loading
+    const loadingTimeout = setTimeout(() => {
+      try {
+        // Get AI-recommended startups
+        const recommendations = recommendationEngine.getRecommendedStartups(demoStartups, 3);
+        
+        // Mix in some random startups for variety (80% recommended, 20% random)
+        const shouldUseRecommendation = Math.random() < 0.8;
+        let selectedStartup: StartupData;
+        
+        if (shouldUseRecommendation && recommendations.length > 0) {
+          selectedStartup = recommendations[Math.floor(Math.random() * Math.min(3, recommendations.length))];
+          const reason = recommendationEngine.getRecommendationReason(selectedStartup);
+          setRecommendationReason(reason);
+        } else {
+          selectedStartup = demoStartups[Math.floor(Math.random() * demoStartups.length)];
+          setRecommendationReason("");
+        }
+        
+        setCurrentStartup(selectedStartup);
+      } catch (error) {
+        console.error('Error loading startup:', error);
+        // Fallback to random startup
+        const fallbackStartup = demoStartups[Math.floor(Math.random() * demoStartups.length)];
+        setCurrentStartup(fallbackStartup);
         setRecommendationReason("");
+      } finally {
+        setIsLoading(false);
       }
-      
-      setCurrentStartup(selectedStartup);
-      setIsLoading(false);
-    }, 500);
+    }, 300); // Reduced from 500ms
+
+    // Cleanup timeout on unmount
+    return () => clearTimeout(loadingTimeout);
   };
 
   const handleSwipe = (interested: boolean) => {
@@ -175,7 +197,11 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
     // Log interaction for learning
     recommendationEngine.logInteraction(currentStartup, interested);
 
-    setSwipeCount(prev => prev + 1);
+    const newSwipeCount = swipeCount + 1;
+    setSwipeCount(newSwipeCount);
+    
+    // Save swipe count to localStorage
+    localStorage.setItem('investorSwipeCount', newSwipeCount.toString());
     
     if (interested) {
       const matches = JSON.parse(localStorage.getItem('investorMatches') || '[]');
@@ -326,13 +352,13 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
                 <p className="text-muted-foreground">{currentStartup.traction}</p>
               </div>
 
-              {/* Action Buttons */}
+              {/* Action Buttons - Fixed sizing */}
               <div className="flex gap-4 mt-auto">
                 <Button
                   onClick={() => handleSwipe(false)}
                   variant="outline"
                   size="lg"
-                  className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+                  className="flex-1 h-12 border-red-200 text-red-600 hover:bg-red-50"
                 >
                   <X className="w-5 h-5 mr-2" />
                   Pass
@@ -340,7 +366,7 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
                 <Button
                   onClick={() => handleSwipe(true)}
                   size="lg"
-                  className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+                  className="flex-1 h-12 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
                 >
                   <Heart className="w-5 h-5 mr-2" />
                   Interested
@@ -351,13 +377,13 @@ const InvestorSwipe = ({ subscription }: InvestorSwipeProps) => {
         </div>
       </Card>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Fixed sizing */}
       <div className="flex gap-4">
-        <Button variant="outline" className="flex-1" onClick={handleViewProfile}>
+        <Button variant="outline" className="flex-1 h-12" onClick={handleViewProfile}>
           <Eye className="w-4 h-4 mr-2" />
           View Full Profile
         </Button>
-        <Button variant="outline" className="flex-1" onClick={handleSendMessage}>
+        <Button variant="outline" className="flex-1 h-12" onClick={handleSendMessage}>
           <MessageSquare className="w-4 h-4 mr-2" />
           Send Message
         </Button>

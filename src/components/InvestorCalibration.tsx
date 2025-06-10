@@ -28,6 +28,7 @@ const InvestorCalibration = ({ onComplete }: InvestorCalibrationProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [calibrationData, setCalibrationData] = useState<Array<{startup: CalibrationStartup, rating: number | null}>>([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const calibrationStartups: CalibrationStartup[] = [
     {
@@ -88,12 +89,56 @@ const InvestorCalibration = ({ onComplete }: InvestorCalibrationProps) => {
   ];
 
   useEffect(() => {
-    // Initialize calibration data
-    setCalibrationData(calibrationStartups.map(startup => ({ startup, rating: null })));
-    
-    // Check if already calibrated
-    const isCalibrated = localStorage.getItem('investorCalibrated') === 'true';
-    setIsComplete(isCalibrated);
+    const initializeCalibration = () => {
+      setIsLoading(true);
+      
+      try {
+        // Initialize calibration data
+        const initialData = calibrationStartups.map(startup => ({ startup, rating: null }));
+        setCalibrationData(initialData);
+        
+        // Check if already calibrated and restore state
+        const isCalibrated = localStorage.getItem('investorCalibrated') === 'true';
+        const calibrationComplete = localStorage.getItem('calibrationComplete');
+        const calibrationLearning = localStorage.getItem('calibrationLearning');
+        
+        console.log('Calibration status:', { isCalibrated, calibrationComplete, calibrationLearning });
+        
+        // If user was previously calibrated, restore their state
+        if (isCalibrated && calibrationComplete && calibrationLearning) {
+          setIsComplete(true);
+          
+          // Restore previous ratings if available
+          try {
+            const learningData = JSON.parse(calibrationLearning);
+            const restoredData = initialData.map(item => {
+              const previousRating = learningData.find((learning: any) => learning.startupId === item.startup.id);
+              return {
+                ...item,
+                rating: previousRating ? previousRating.rating : null
+              };
+            });
+            setCalibrationData(restoredData);
+            
+            toast({
+              title: "Welcome back!",
+              description: "Your calibration preferences have been restored."
+            });
+          } catch (error) {
+            console.error('Error restoring calibration data:', error);
+          }
+        } else {
+          setIsComplete(false);
+        }
+      } catch (error) {
+        console.error('Error initializing calibration:', error);
+        setIsComplete(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeCalibration();
   }, []);
 
   const handleRating = (rating: number) => {
@@ -112,7 +157,8 @@ const InvestorCalibration = ({ onComplete }: InvestorCalibrationProps) => {
     };
     
     const existingLearning = JSON.parse(localStorage.getItem('calibrationLearning') || '[]');
-    localStorage.setItem('calibrationLearning', JSON.stringify([...existingLearning, learningData]));
+    const updatedLearning = existingLearning.filter((item: any) => item.startupId !== learningData.startupId);
+    localStorage.setItem('calibrationLearning', JSON.stringify([...updatedLearning, learningData]));
 
     if (currentIndex < calibrationStartups.length - 1) {
       setCurrentIndex(currentIndex + 1);
@@ -147,7 +193,35 @@ const InvestorCalibration = ({ onComplete }: InvestorCalibrationProps) => {
     onComplete();
   };
 
+  const resetCalibration = () => {
+    setIsComplete(false);
+    setCurrentIndex(0);
+    const resetData = calibrationStartups.map(startup => ({ startup, rating: null }));
+    setCalibrationData(resetData);
+    
+    // Clear localStorage
+    localStorage.removeItem('investorCalibrated');
+    localStorage.removeItem('calibrationComplete');
+    localStorage.removeItem('calibrationLearning');
+    
+    toast({
+      title: "Calibration Reset",
+      description: "Starting fresh calibration process."
+    });
+  };
+
   const progress = ((currentIndex + (isComplete ? 1 : 0)) / calibrationStartups.length) * 100;
+
+  if (isLoading) {
+    return (
+      <Card className="border-0 shadow-lg">
+        <CardContent className="p-8 text-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading calibration...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isComplete) {
     return (
@@ -178,8 +252,9 @@ const InvestorCalibration = ({ onComplete }: InvestorCalibrationProps) => {
             </div>
           </div>
           <Button 
-            onClick={() => setIsComplete(false)}
+            onClick={resetCalibration}
             variant="outline"
+            className="h-12"
           >
             Recalibrate Preferences
           </Button>
@@ -258,7 +333,7 @@ const InvestorCalibration = ({ onComplete }: InvestorCalibrationProps) => {
                   onClick={() => handleRating(1)}
                   variant="outline"
                   size="lg"
-                  className="flex-1 max-w-32 border-red-200 text-red-600 hover:bg-red-50"
+                  className="flex-1 max-w-32 h-12 border-red-200 text-red-600 hover:bg-red-50"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Not Interested
@@ -267,14 +342,14 @@ const InvestorCalibration = ({ onComplete }: InvestorCalibrationProps) => {
                   onClick={() => handleRating(3)}
                   variant="outline"
                   size="lg"
-                  className="flex-1 max-w-32"
+                  className="flex-1 max-w-32 h-12"
                 >
                   Maybe
                 </Button>
                 <Button
                   onClick={() => handleRating(5)}
                   size="lg"
-                  className="flex-1 max-w-32 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+                  className="flex-1 max-w-32 h-12 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
                 >
                   <Heart className="w-4 h-4 mr-2" />
                   Very Interested
