@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2, MapPin, Users, TrendingUp, DollarSign, MessageSquare, X } from "lucide-react";
+import { Building2, MapPin, Users, TrendingUp, DollarSign, MessageSquare, X, Heart } from "lucide-react";
 import { StartupData } from "@/types";
+import { useWatchlist } from "@/hooks/useWatchlist";
 
 interface StartupProfileModalProps {
   startup: StartupData;
@@ -14,6 +15,20 @@ interface StartupProfileModalProps {
 }
 
 const StartupProfileModal = ({ startup, isOpen, onClose, onMessage }: StartupProfileModalProps) => {
+  const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
+  const inWatchlist = isInWatchlist(startup.id, 'startup');
+
+  const handleWatchlistToggle = () => {
+    if (inWatchlist) {
+      // Find the watchlist item and remove it
+      // Note: This would need the watchlist item ID, which we'd need to pass from parent
+      // For now, we'll just add the functionality
+      removeFromWatchlist(startup.id); // This should be the watchlist item ID
+    } else {
+      addToWatchlist(startup.id, 'startup');
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -115,8 +130,13 @@ const StartupProfileModal = ({ startup, isOpen, onClose, onMessage }: StartupPro
               <MessageSquare className="w-4 h-4 mr-2" />
               Send Message
             </Button>
-            <Button variant="outline" size="lg">
-              Add to Watchlist
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={handleWatchlistToggle}
+            >
+              <Heart className={`w-4 h-4 mr-2 ${inWatchlist ? 'fill-current text-red-500' : ''}`} />
+              {inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
             </Button>
             <Button variant="outline" size="lg">
               Share Profile

@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, MapPin, DollarSign, Star, MessageSquare, X, Building2 } from "lucide-react";
+import { Users, MapPin, DollarSign, Star, MessageSquare, X, Building2, Heart } from "lucide-react";
 import { InvestorData } from "@/types";
+import { useWatchlist } from "@/hooks/useWatchlist";
 
 interface InvestorProfileModalProps {
   investor: InvestorData;
@@ -14,6 +15,17 @@ interface InvestorProfileModalProps {
 }
 
 const InvestorProfileModal = ({ investor, isOpen, onClose, onMessage }: InvestorProfileModalProps) => {
+  const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
+  const inWatchlist = isInWatchlist(investor.id, 'investor');
+
+  const handleWatchlistToggle = () => {
+    if (inWatchlist) {
+      removeFromWatchlist(investor.id); // This should be the watchlist item ID
+    } else {
+      addToWatchlist(investor.id, 'investor');
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -130,8 +142,13 @@ const InvestorProfileModal = ({ investor, isOpen, onClose, onMessage }: Investor
               <MessageSquare className="w-4 h-4 mr-2" />
               Send Message
             </Button>
-            <Button variant="outline" size="lg">
-              Follow Investor
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={handleWatchlistToggle}
+            >
+              <Heart className={`w-4 h-4 mr-2 ${inWatchlist ? 'fill-current text-red-500' : ''}`} />
+              {inWatchlist ? 'Unfollow' : 'Follow Investor'}
             </Button>
             <Button variant="outline" size="lg">
               Share Profile

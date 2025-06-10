@@ -3,65 +3,137 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Eye, Users, Mail, Calendar } from "lucide-react";
+import { MessageSquare, Eye, Users, Calendar } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import ChatModal from "./ChatModal";
+import InvestorProfileModal from "./InvestorProfileModal";
+
+interface Match {
+  id: string;
+  investor: {
+    id: string;
+    user_id: string;
+    name: string;
+    description: string;
+    sectors: string[];
+    stages: string[];
+    ticket_size: string;
+    location: string;
+    portfolio: string;
+    logo: string;
+  };
+  status: string;
+  created_at: string;
+}
 
 const StartupMatches = () => {
-  const [matches, setMatches] = useState<any[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedInvestor, setSelectedInvestor] = useState<any>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Simulate some interested investors
-    const demoMatches = [
-      {
-        id: 1,
-        name: "TechVentures Capital",
-        partner: "Sarah Chen",
-        focusAreas: ["AI/ML", "SaaS"],
-        ticketSize: "$1M - $5M",
-        portfolio: "50+ startups",
-        status: "interested",
-        matchDate: "2024-01-10"
-      },
-      {
-        id: 2,
-        name: "InnovateVC",
-        partner: "Michael Rodriguez",
-        focusAreas: ["FinTech", "Enterprise"],
-        ticketSize: "$500K - $2M",
-        portfolio: "30+ startups",
-        status: "interested",
-        matchDate: "2024-01-08"
-      },
-      {
-        id: 3,
-        name: "Future Fund",
-        partner: "Emily Watson",
-        focusAreas: ["CleanTech", "HealthTech"],
-        ticketSize: "$2M - $10M",
-        portfolio: "25+ startups",
-        status: "messaged",
-        matchDate: "2024-01-05"
-      }
-    ];
-    setMatches(demoMatches);
+    loadMatches();
   }, []);
+
+  const loadMatches = async () => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) return;
+
+      // Get current user's startup
+      const { data: startup, error: startupError } = await supabase
+        .from('startups')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (startupError) throw startupError;
+
+      // Get matches for this startup
+      const { data: matchesData, error: matchesError } = await supabase
+        .from('matches')
+        .select(`
+          id,
+          status,
+          created_at,
+          investor:investor_id (
+            id,
+            user_id,
+            name,
+            description,
+            sectors,
+            stages,
+            ticket_size,
+            location,
+            portfolio,
+            logo
+          )
+        `)
+        .eq('startup_id', startup.id)
+        .not('investor', 'is', null)
+        .order('created_at', { ascending: false });
+
+      if (matchesError) throw matchesError;
+
+      setMatches(matchesData || []);
+    } catch (error) {
+      console.error('Error loading matches:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load investor matches",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'interested': return 'bg-green-100 text-green-700';
-      case 'messaged': return 'bg-blue-100 text-blue-700';
-      case 'meeting': return 'bg-purple-100 text-purple-700';
+      case 'accepted': return 'bg-green-100 text-green-700';
+      case 'pending': return 'bg-yellow-100 text-yellow-700';
+      case 'declined': return 'bg-red-100 text-red-700';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'interested': return 'Interested';
-      case 'messaged': return 'In Conversation';
-      case 'meeting': return 'Meeting Scheduled';
+      case 'accepted': return 'Connected';
+      case 'pending': return 'Interest Shown';
+      case 'declined': return 'Declined';
       default: return 'New';
     }
   };
+
+  const handleMessage = (investor: any) => {
+    setSelectedInvestor(investor);
+    setIsChatOpen(true);
+  };
+
+  const handleViewProfile = (investor: any) => {
+    setSelectedInvestor(investor);
+    setIsProfileOpen(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-0 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -86,9 +158,14 @@ const StartupMatches = () => {
               {matches.map((match) => (
                 <div key={match.id} className="border rounded-lg p-6 hover:bg-muted/50 transition-colors">
                   <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold">{match.name}</h3>
-                      <p className="text-muted-foreground">Partner: {match.partner}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center text-lg">
+                        {match.investor.logo}
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold">{match.investor.name}</h3>
+                        <p className="text-muted-foreground">{match.investor.location}</p>
+                      </div>
                     </div>
                     <Badge className={getStatusColor(match.status)}>
                       {getStatusText(match.status)}
@@ -99,29 +176,37 @@ const StartupMatches = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Focus Areas</p>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {match.focusAreas.map((area: string, index: number) => (
+                        {match.investor.sectors.slice(0, 3).map((sector: string, index: number) => (
                           <Badge key={index} variant="outline" className="text-xs">
-                            {area}
+                            {sector}
                           </Badge>
                         ))}
                       </div>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Ticket Size</p>
-                      <p className="font-medium">{match.ticketSize}</p>
+                      <p className="font-medium">{match.investor.ticket_size}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Portfolio</p>
-                      <p className="font-medium">{match.portfolio}</p>
+                      <p className="font-medium">{match.investor.portfolio}</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                    <Button 
+                      size="sm" 
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                      onClick={() => handleMessage(match.investor)}
+                    >
                       <MessageSquare className="w-4 h-4 mr-2" />
                       Message
                     </Button>
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleViewProfile(match.investor)}
+                    >
                       <Eye className="w-4 h-4 mr-2" />
                       View Profile
                     </Button>
@@ -161,6 +246,34 @@ const StartupMatches = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Chat Modal */}
+      {selectedInvestor && (
+        <ChatModal
+          recipient={selectedInvestor}
+          isOpen={isChatOpen}
+          onClose={() => {
+            setIsChatOpen(false);
+            setSelectedInvestor(null);
+          }}
+        />
+      )}
+
+      {/* Profile Modal */}
+      {selectedInvestor && (
+        <InvestorProfileModal
+          investor={selectedInvestor}
+          isOpen={isProfileOpen}
+          onClose={() => {
+            setIsProfileOpen(false);
+            setSelectedInvestor(null);
+          }}
+          onMessage={() => {
+            setIsProfileOpen(false);
+            setIsChatOpen(true);
+          }}
+        />
+      )}
     </div>
   );
 };
