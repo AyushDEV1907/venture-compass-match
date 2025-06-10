@@ -1,6 +1,6 @@
 
 export interface StartupData {
-  id: number;
+  id: string;
   name: string;
   description: string;
   sector: string;
@@ -15,7 +15,7 @@ export interface StartupData {
 }
 
 export interface InvestorData {
-  id: number;
+  id: string;
   name: string;
   description: string;
   sectors: string[];

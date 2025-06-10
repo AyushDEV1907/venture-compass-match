@@ -110,12 +110,24 @@ export const useWatchlist = () => {
     }
   };
 
-  const removeFromWatchlist = async (watchlistId: string) => {
+  const removeFromWatchlist = async (itemId: string, type: 'startup' | 'investor') => {
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('Not authenticated');
+
+      const deleteCondition: any = { user_id: user.id };
+      
+      if (type === 'startup') {
+        deleteCondition.startup_id = itemId;
+      } else {
+        deleteCondition.investor_id = itemId;
+      }
+
       const { error } = await supabase
         .from('watchlists')
         .delete()
-        .eq('id', watchlistId);
+        .match(deleteCondition);
 
       if (error) throw error;
 

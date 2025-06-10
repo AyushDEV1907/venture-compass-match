@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +19,7 @@ const StartupProfileModal = ({ startup, isOpen, onClose, onMessage }: StartupPro
 
   const handleWatchlistToggle = () => {
     if (inWatchlist) {
-      // Find the watchlist item and remove it
-      // Note: This would need the watchlist item ID, which we'd need to pass from parent
-      // For now, we'll just add the functionality
-      removeFromWatchlist(startup.id); // This should be the watchlist item ID
+      removeFromWatchlist(startup.id, 'startup');
     } else {
       addToWatchlist(startup.id, 'startup');
     }

@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +19,7 @@ const InvestorProfileModal = ({ investor, isOpen, onClose, onMessage }: Investor
 
   const handleWatchlistToggle = () => {
     if (inWatchlist) {
-      removeFromWatchlist(investor.id); // This should be the watchlist item ID
+      removeFromWatchlist(investor.id, 'investor');
     } else {
       addToWatchlist(investor.id, 'investor');
     }
