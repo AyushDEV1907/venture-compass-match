@@ -14,14 +14,12 @@ const UserTypeSelection = ({ userType, onComplete }: UserTypeSelectionProps) => 
     // If user is authenticated, redirect to dashboard
     if (user) {
       onComplete();
+      return;
     }
-  }, [user, onComplete]);
-
-  // This component is no longer needed as authentication is handled in AuthPage
-  // Just redirect to complete if somehow reached
-  useEffect(() => {
+    
+    // Component is deprecated, redirect to complete
     onComplete();
-  }, [onComplete]);
+  }, [user, onComplete]);
 
   return null;
 };

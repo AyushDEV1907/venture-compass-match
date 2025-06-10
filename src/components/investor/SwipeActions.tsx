@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Eye, MessageSquare } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 interface SwipeActionsProps {
   onViewProfile: () => void;
@@ -9,34 +8,14 @@ interface SwipeActionsProps {
 }
 
 const SwipeActions = ({ onViewProfile, onSendMessage }: SwipeActionsProps) => {
-  const { toast } = useToast();
-
   const handleViewProfile = () => {
     console.log('View profile clicked');
-    try {
-      onViewProfile();
-    } catch (error) {
-      console.error('Error viewing profile:', error);
-      toast({
-        title: "Error",
-        description: "Unable to view profile at this time.",
-        variant: "destructive"
-      });
-    }
+    onViewProfile();
   };
 
   const handleSendMessage = () => {
     console.log('Send message clicked');
-    try {
-      onSendMessage();
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: "Unable to send message at this time.",
-        variant: "destructive"
-      });
-    }
+    onSendMessage();
   };
 
   return (
