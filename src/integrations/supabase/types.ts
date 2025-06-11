@@ -33,6 +33,45 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          interaction_type: string
+          investor_id: string
+          startup_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction_type: string
+          investor_id: string
+          startup_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          investor_id?: string
+          startup_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_interactions_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_interactions_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investors: {
         Row: {
           created_at: string
@@ -153,6 +192,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pitch_views: {
+        Row: {
+          created_at: string
+          id: string
+          startup_id: string
+          viewer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          startup_id: string
+          viewer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          startup_id?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pitch_views_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pitch_views_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           company: string | null
@@ -197,6 +272,42 @@ export type Database = {
           user_type?: Database["public"]["Enums"]["user_type"]
         }
         Relationships: []
+      }
+      startup_views: {
+        Row: {
+          created_at: string
+          id: string
+          startup_id: string
+          viewer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          startup_id: string
+          viewer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          startup_id?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_views_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_views_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       startups: {
         Row: {
@@ -293,7 +404,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_investor_stats: {
+        Args: { investor_user_id: string }
+        Returns: Json
+      }
+      get_startup_stats: {
+        Args: { startup_user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       user_type: "startup" | "investor"

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, Users, TrendingUp, MessageSquare, Star, Eye, Target, LogOut, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useStartupStats } from "@/hooks/useStartupStats";
 
 interface StartupDashboardProps {
   onLogout: () => void;
@@ -14,6 +15,7 @@ interface StartupDashboardProps {
 const StartupDashboard = ({ onLogout }: StartupDashboardProps) => {
   const [profile, setProfile] = useState<any>(null);
   const [subscription, setSubscription] = useState('free');
+  const { stats, loading: statsLoading } = useStartupStats();
 
   useEffect(() => {
     const savedProfile = localStorage.getItem('startupProfile');
@@ -25,12 +27,20 @@ const StartupDashboard = ({ onLogout }: StartupDashboardProps) => {
     setSubscription(savedSubscription);
   }, []);
 
-  const stats = [
+  const staticStats = [
     { label: 'Profile Views', value: 89, icon: Eye, change: '+12' },
     { label: 'Investor Matches', value: 7, icon: Target, change: '+3' },
     { label: 'Messages', value: 4, icon: MessageSquare, change: '+2' },
     { label: 'Pitch Views', value: 23, icon: TrendingUp, change: '+8' }
   ];
+
+  // Use real stats if available, otherwise fall back to static data
+  const displayStats = stats ? [
+    { label: 'Profile Views', value: stats.profile_views, icon: Eye, change: '+12' },
+    { label: 'Investor Matches', value: stats.investor_matches, icon: Target, change: '+3' },
+    { label: 'Messages', value: stats.messages, icon: MessageSquare, change: '+2' },
+    { label: 'Pitch Views', value: stats.pitch_views, icon: TrendingUp, change: '+8' }
+  ] : staticStats;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -77,13 +87,19 @@ const StartupDashboard = ({ onLogout }: StartupDashboardProps) => {
       <div className="container mx-auto px-6 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
+          {displayStats.map((stat, index) => (
             <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    <p className="text-3xl font-bold">{stat.value}</p>
+                    <p className="text-3xl font-bold">
+                      {statsLoading ? (
+                        <div className="w-8 h-8 bg-muted rounded animate-pulse"></div>
+                      ) : (
+                        stat.value
+                      )}
+                    </p>
                     <p className="text-sm text-green-600 font-medium">{stat.change}</p>
                   </div>
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
