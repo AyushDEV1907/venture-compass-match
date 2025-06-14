@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthContext";
 import StartupProfileModal from "@/components/StartupProfileModal";
 import ChatModal from "@/components/ChatModal";
+import { StartupData } from "@/types";
 
 interface Recommendation {
   startup_id: string;
@@ -39,12 +39,29 @@ const PersonalizedRecommendations = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [startupDetails, setStartupDetails] = useState<Record<string, StartupDetail>>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedStartup, setSelectedStartup] = useState<StartupDetail | null>(null);
+  const [selectedStartup, setSelectedStartup] = useState<StartupData | null>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [hasPreferences, setHasPreferences] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Utility function to convert StartupDetail to StartupData
+  const convertToStartupData = (startupDetail: StartupDetail): StartupData => {
+    return {
+      id: startupDetail.id,
+      name: startupDetail.name,
+      description: startupDetail.description,
+      sector: startupDetail.sector,
+      stage: startupDetail.stage,
+      fundingTarget: startupDetail.funding_target,
+      location: startupDetail.location,
+      teamSize: startupDetail.team_size,
+      revenue: startupDetail.revenue,
+      traction: startupDetail.traction,
+      logo: startupDetail.logo,
+    };
+  };
 
   useEffect(() => {
     if (user) {
@@ -196,7 +213,7 @@ const PersonalizedRecommendations = () => {
   const handleViewProfile = (recommendation: Recommendation) => {
     const startup = startupDetails[recommendation.startup_id];
     if (startup) {
-      setSelectedStartup(startup);
+      setSelectedStartup(convertToStartupData(startup));
       setShowProfile(true);
       logRecommendationView(recommendation.startup_id, recommendation.recommendation_score);
     }
@@ -205,7 +222,7 @@ const PersonalizedRecommendations = () => {
   const handleMessage = (recommendation: Recommendation) => {
     const startup = startupDetails[recommendation.startup_id];
     if (startup) {
-      setSelectedStartup(startup);
+      setSelectedStartup(convertToStartupData(startup));
       setShowChat(true);
       logInterested(recommendation.startup_id, recommendation.recommendation_score);
     }
