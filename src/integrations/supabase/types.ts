@@ -33,6 +33,65 @@ export type Database = {
         }
         Relationships: []
       }
+      fundability_scores: {
+        Row: {
+          business_model_score: number
+          created_at: string | null
+          exit_potential_score: number
+          feedback: Json | null
+          id: string
+          improvement_areas: string[] | null
+          market_potential_score: number
+          score: number
+          startup_id: string | null
+          status: string
+          team_score: number
+          traction_score: number
+          updated_at: string | null
+          value_proposition_score: number
+        }
+        Insert: {
+          business_model_score: number
+          created_at?: string | null
+          exit_potential_score: number
+          feedback?: Json | null
+          id?: string
+          improvement_areas?: string[] | null
+          market_potential_score: number
+          score: number
+          startup_id?: string | null
+          status?: string
+          team_score: number
+          traction_score: number
+          updated_at?: string | null
+          value_proposition_score: number
+        }
+        Update: {
+          business_model_score?: number
+          created_at?: string | null
+          exit_potential_score?: number
+          feedback?: Json | null
+          id?: string
+          improvement_areas?: string[] | null
+          market_potential_score?: number
+          score?: number
+          startup_id?: string | null
+          status?: string
+          team_score?: number
+          traction_score?: number
+          updated_at?: string | null
+          value_proposition_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fundability_scores_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investor_interactions: {
         Row: {
           created_at: string
@@ -68,6 +127,59 @@ export type Database = {
             columns: ["startup_id"]
             isOneToOne: false
             referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_preferences: {
+        Row: {
+          created_at: string | null
+          exclusion_criteria: string[] | null
+          id: string
+          investment_thesis: string | null
+          investor_id: string | null
+          max_check_size: number | null
+          min_check_size: number | null
+          preferred_geographies: string[] | null
+          preferred_sectors: string[] | null
+          preferred_stages: string[] | null
+          risk_appetite: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          exclusion_criteria?: string[] | null
+          id?: string
+          investment_thesis?: string | null
+          investor_id?: string | null
+          max_check_size?: number | null
+          min_check_size?: number | null
+          preferred_geographies?: string[] | null
+          preferred_sectors?: string[] | null
+          preferred_stages?: string[] | null
+          risk_appetite?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          exclusion_criteria?: string[] | null
+          id?: string
+          investment_thesis?: string | null
+          investor_id?: string | null
+          max_check_size?: number | null
+          min_check_size?: number | null
+          preferred_geographies?: string[] | null
+          preferred_sectors?: string[] | null
+          preferred_stages?: string[] | null
+          risk_appetite?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_preferences_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
             referencedColumns: ["id"]
           },
         ]
@@ -273,6 +385,220 @@ export type Database = {
         }
         Relationships: []
       }
+      recommendation_logs: {
+        Row: {
+          algorithm_version: string | null
+          clicked: boolean | null
+          clicked_at: string | null
+          features_used: Json | null
+          id: string
+          interested: boolean | null
+          interested_at: string | null
+          investor_id: string | null
+          recommendation_score: number
+          shown_at: string | null
+          startup_id: string | null
+        }
+        Insert: {
+          algorithm_version?: string | null
+          clicked?: boolean | null
+          clicked_at?: string | null
+          features_used?: Json | null
+          id?: string
+          interested?: boolean | null
+          interested_at?: string | null
+          investor_id?: string | null
+          recommendation_score: number
+          shown_at?: string | null
+          startup_id?: string | null
+        }
+        Update: {
+          algorithm_version?: string | null
+          clicked?: boolean | null
+          clicked_at?: string | null
+          features_used?: Json | null
+          id?: string
+          interested?: boolean | null
+          interested_at?: string | null
+          investor_id?: string | null
+          recommendation_score?: number
+          shown_at?: string | null
+          startup_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendation_logs_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendation_logs_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_checkins: {
+        Row: {
+          challenges: string | null
+          created_at: string | null
+          funding_raised: number | null
+          goals_next_quarter: string | null
+          id: string
+          new_partnerships: number | null
+          product_updates: string | null
+          quarter: string
+          rescoring_needed: boolean | null
+          revenue_growth: number | null
+          startup_id: string | null
+          team_changes: number | null
+          user_growth: number | null
+          year: number
+        }
+        Insert: {
+          challenges?: string | null
+          created_at?: string | null
+          funding_raised?: number | null
+          goals_next_quarter?: string | null
+          id?: string
+          new_partnerships?: number | null
+          product_updates?: string | null
+          quarter: string
+          rescoring_needed?: boolean | null
+          revenue_growth?: number | null
+          startup_id?: string | null
+          team_changes?: number | null
+          user_growth?: number | null
+          year: number
+        }
+        Update: {
+          challenges?: string | null
+          created_at?: string | null
+          funding_raised?: number | null
+          goals_next_quarter?: string | null
+          id?: string
+          new_partnerships?: number | null
+          product_updates?: string | null
+          quarter?: string
+          rescoring_needed?: boolean | null
+          revenue_growth?: number | null
+          startup_id?: string | null
+          team_changes?: number | null
+          user_growth?: number | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_checkins_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_features: {
+        Row: {
+          competition_score: number | null
+          feature_vector: Json | null
+          financial_health_score: number | null
+          fundability_score: number | null
+          id: string
+          last_updated: string | null
+          market_size_score: number | null
+          product_readiness_score: number | null
+          startup_id: string | null
+          team_experience_score: number | null
+        }
+        Insert: {
+          competition_score?: number | null
+          feature_vector?: Json | null
+          financial_health_score?: number | null
+          fundability_score?: number | null
+          id?: string
+          last_updated?: string | null
+          market_size_score?: number | null
+          product_readiness_score?: number | null
+          startup_id?: string | null
+          team_experience_score?: number | null
+        }
+        Update: {
+          competition_score?: number | null
+          feature_vector?: Json | null
+          financial_health_score?: number | null
+          fundability_score?: number | null
+          id?: string
+          last_updated?: string | null
+          market_size_score?: number | null
+          product_readiness_score?: number | null
+          startup_id?: string | null
+          team_experience_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_features_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_improvements: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          fundability_score_id: string | null
+          id: string
+          improvement_type: string
+          notes: string | null
+          resources_used: string[] | null
+          startup_id: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          fundability_score_id?: string | null
+          id?: string
+          improvement_type: string
+          notes?: string | null
+          resources_used?: string[] | null
+          startup_id?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          fundability_score_id?: string | null
+          id?: string
+          improvement_type?: string
+          notes?: string | null
+          resources_used?: string[] | null
+          startup_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_improvements_fundability_score_id_fkey"
+            columns: ["fundability_score_id"]
+            isOneToOne: false
+            referencedRelation: "fundability_scores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_improvements_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       startup_views: {
         Row: {
           created_at: string
@@ -404,9 +730,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_fundability_score: {
+        Args: {
+          market_potential: number
+          value_proposition: number
+          team: number
+          business_model: number
+          traction: number
+          exit_potential: number
+        }
+        Returns: number
+      }
       get_investor_stats: {
         Args: { investor_user_id: string }
         Returns: Json
+      }
+      get_startup_recommendations: {
+        Args: { p_investor_id: string; p_limit?: number }
+        Returns: {
+          startup_id: string
+          startup_name: string
+          fundability_score: number
+          recommendation_score: number
+          sector: string
+          stage: string
+          location: string
+        }[]
       }
       get_startup_stats: {
         Args: { startup_user_id: string }
