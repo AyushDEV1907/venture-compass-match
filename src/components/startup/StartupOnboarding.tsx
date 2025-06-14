@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,6 +92,7 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
   };
 
   const uploadPitchDeckToStorage = async (userId: string, startupId: string, file: File) => {
+    console.log('StartupOnboarding: Starting pitch deck upload');
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/pitch-deck-${Date.now()}.${fileExt}`;
@@ -106,9 +106,11 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
         });
 
       if (uploadError) {
-        console.error('Storage upload error:', uploadError);
+        console.error('StartupOnboarding: Storage upload error:', uploadError);
         throw uploadError;
       }
+
+      console.log('StartupOnboarding: File uploaded successfully, recording metadata');
 
       // Record metadata in pitch_deck_uploads table
       const { error: metadataError } = await supabase
@@ -124,18 +126,21 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
         });
 
       if (metadataError) {
-        console.error('Metadata insert error:', metadataError);
+        console.error('StartupOnboarding: Metadata insert error:', metadataError);
         throw metadataError;
       }
 
+      console.log('StartupOnboarding: Pitch deck upload completed successfully');
       return fileName;
     } catch (error) {
-      console.error('Error uploading pitch deck:', error);
+      console.error('StartupOnboarding: Error uploading pitch deck:', error);
       throw error;
     }
   };
 
   const handleSubmit = async () => {
+    console.log('StartupOnboarding: Form submission started');
+    
     if (!formData.name || !formData.sector || !formData.stage) {
       toast({
         title: "Missing required fields",
@@ -149,12 +154,18 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
     setUploadProgress(0);
 
     try {
+      console.log('StartupOnboarding: Getting current user');
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!user) {
+        console.error('StartupOnboarding: No authenticated user found');
+        throw new Error("Not authenticated");
+      }
 
+      console.log('StartupOnboarding: User found, updating progress');
       setUploadProgress(25);
 
       // First, get or create the startup record
+      console.log('StartupOnboarding: Checking for existing startup record');
       const { data: existingStartup } = await supabase
         .from('startups')
         .select('id')
@@ -165,6 +176,7 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
 
       // Update or create startup record
       if (startupId) {
+        console.log('StartupOnboarding: Updating existing startup record');
         const { error: updateError } = await supabase
           .from('startups')
           .update({
@@ -180,8 +192,12 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
           })
           .eq('user_id', user.id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('StartupOnboarding: Update error:', updateError);
+          throw updateError;
+        }
       } else {
+        console.log('StartupOnboarding: Creating new startup record');
         const { data: newStartup, error: insertError } = await supabase
           .from('startups')
           .insert({
@@ -199,20 +215,26 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
           .select('id')
           .single();
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('StartupOnboarding: Insert error:', insertError);
+          throw insertError;
+        }
         startupId = newStartup.id;
       }
 
+      console.log('StartupOnboarding: Startup record processed, updating progress');
       setUploadProgress(50);
 
       // Upload pitch deck if provided
       let pitchDeckUrl = null;
       if (pitchDeck && startupId) {
         try {
+          console.log('StartupOnboarding: Starting pitch deck upload process');
           pitchDeckUrl = await uploadPitchDeckToStorage(user.id, startupId, pitchDeck);
           setUploadProgress(75);
           
           // Update startup record with pitch deck URL
+          console.log('StartupOnboarding: Updating startup with pitch deck URL');
           await supabase
             .from('startups')
             .update({ pitch_deck_url: pitchDeckUrl })
@@ -223,7 +245,7 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
             description: "Your pitch deck has been securely stored."
           });
         } catch (uploadError) {
-          console.error('Upload error:', uploadError);
+          console.error('StartupOnboarding: Upload error:', uploadError);
           toast({
             title: "Pitch deck upload failed",
             description: "Your profile was saved, but the pitch deck couldn't be uploaded. You can try again later.",
@@ -235,6 +257,7 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
       setUploadProgress(90);
 
       // Update user profile
+      console.log('StartupOnboarding: Updating user profile');
       await supabase
         .from('profiles')
         .update({
@@ -254,9 +277,15 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
         description: "Your startup profile has been successfully created."
       });
 
-      onComplete();
+      console.log('StartupOnboarding: Profile setup completed successfully');
+      
+      // Small delay to show 100% progress before completing
+      setTimeout(() => {
+        onComplete();
+      }, 500);
+
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('StartupOnboarding: Error updating profile:', error);
       toast({
         title: "Update failed",
         description: "There was an error updating your profile. Please try again.",
