@@ -34,7 +34,9 @@ export const useStartupStats = () => {
         return;
       }
 
-      setStats(data);
+      // Parse the JSON data and cast to StartupStats
+      const parsedStats = typeof data === 'string' ? JSON.parse(data) : data;
+      setStats(parsedStats as StartupStats);
       setError(null);
     } catch (err) {
       console.error('Error in fetchStats:', err);

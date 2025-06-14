@@ -34,7 +34,9 @@ export const useInvestorStats = () => {
         return;
       }
 
-      setStats(data);
+      // Parse the JSON data and cast to InvestorStats
+      const parsedStats = typeof data === 'string' ? JSON.parse(data) : data;
+      setStats(parsedStats as InvestorStats);
       setError(null);
     } catch (err) {
       console.error('Error in fetchStats:', err);
