@@ -4,15 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Users, TrendingUp, MessageSquare, Star, Eye, Target, LogOut, Building2 } from "lucide-react";
+import { DollarSign, Users, TrendingUp, MessageSquare, Star, Eye, Target, LogOut, Building2, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/components/AuthContext";
 import InvestorPreferences from "@/components/InvestorPreferences";
 import InvestorCalibration from "@/components/InvestorCalibration";
 import InvestorSwipe from "@/components/InvestorSwipe";
 import InvestorMatches from "@/components/InvestorMatches";
-import SubscriptionPlans from "@/components/SubscriptionPlans";
 import { useInvestorStats } from "@/hooks/useInvestorStats";
+import EnhancedSubscriptionPlans from "@/components/enhanced/EnhancedSubscriptionPlans";
+import AdvancedAnalytics from "@/components/enhanced/AdvancedAnalytics";
 
 interface InvestorDashboardProps {
   onLogout: () => void;
@@ -55,7 +56,7 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
   const getSearchLimit = () => {
     switch (subscription) {
       case 'premium': return 'Unlimited';
-      case 'pro': return '50/month';
+      case 'pro': return '100/month';
       default: return '5/month';
     }
   };
@@ -63,7 +64,7 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
   const getUsedSearches = () => {
     switch (subscription) {
       case 'premium': return 'N/A';
-      case 'pro': return '23/50';
+      case 'pro': return '42/100';
       default: return '3/5';
     }
   };
@@ -162,6 +163,7 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
           <TabsList className="bg-white border shadow-sm">
             <TabsTrigger value="discover">Discover</TabsTrigger>
             <TabsTrigger value="matches">My Matches</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
             <TabsTrigger value="calibration">Calibration</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
@@ -189,7 +191,7 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
                       {subscription === 'free' && (
                         <div className="p-3 bg-orange-50 rounded-lg">
                           <p className="text-sm text-orange-700">
-                            Upgrade to Pro for 50 searches per month or Premium for unlimited access.
+                            Upgrade to Pro for 100 searches per month or Premium for unlimited access.
                           </p>
                         </div>
                       )}
@@ -224,6 +226,13 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
             <InvestorMatches />
           </TabsContent>
 
+          <TabsContent value="analytics">
+            <AdvancedAnalytics 
+              userType="investor" 
+              subscription={subscription}
+            />
+          </TabsContent>
+
           <TabsContent value="preferences">
             <InvestorPreferences />
           </TabsContent>
@@ -233,7 +242,7 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
           </TabsContent>
 
           <TabsContent value="subscription">
-            <SubscriptionPlans currentPlan={subscription} userType="investor" />
+            <EnhancedSubscriptionPlans currentPlan={subscription} userType="investor" />
           </TabsContent>
         </Tabs>
       </div>
