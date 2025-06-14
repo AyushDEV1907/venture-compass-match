@@ -42,12 +42,25 @@ export const useStartupStats = () => {
           setError('Failed to fetch startup stats');
         } else {
           console.log('useStartupStats: Stats fetched successfully:', data);
-          setStats(data || {
-            profile_views: 0,
-            investor_matches: 0,
-            messages: 0,
-            pitch_views: 0
-          });
+          
+          // Type-safe handling of the returned data
+          if (data && typeof data === 'object' && !Array.isArray(data)) {
+            const typedStats: StartupStats = {
+              profile_views: Number(data.profile_views) || 0,
+              investor_matches: Number(data.investor_matches) || 0,
+              messages: Number(data.messages) || 0,
+              pitch_views: Number(data.pitch_views) || 0
+            };
+            setStats(typedStats);
+          } else {
+            // Fallback to default stats if data is not in expected format
+            setStats({
+              profile_views: 0,
+              investor_matches: 0,
+              messages: 0,
+              pitch_views: 0
+            });
+          }
         }
       } catch (err) {
         console.error('useStartupStats: Exception:', err);
