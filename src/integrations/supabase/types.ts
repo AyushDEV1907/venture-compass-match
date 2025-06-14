@@ -304,6 +304,53 @@ export type Database = {
         }
         Relationships: []
       }
+      pitch_deck_uploads: {
+        Row: {
+          content_type: string
+          created_at: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+          startup_id: string | null
+          updated_at: string | null
+          upload_status: string
+          user_id: string | null
+        }
+        Insert: {
+          content_type: string
+          created_at?: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          id?: string
+          startup_id?: string | null
+          updated_at?: string | null
+          upload_status?: string
+          user_id?: string | null
+        }
+        Update: {
+          content_type?: string
+          created_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          startup_id?: string | null
+          updated_at?: string | null
+          upload_status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pitch_deck_uploads_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pitch_views: {
         Row: {
           created_at: string
@@ -644,6 +691,7 @@ export type Database = {
           location: string | null
           logo: string | null
           name: string
+          pitch_deck_url: string | null
           revenue: string | null
           sector: string
           stage: string
@@ -660,6 +708,7 @@ export type Database = {
           location?: string | null
           logo?: string | null
           name: string
+          pitch_deck_url?: string | null
           revenue?: string | null
           sector: string
           stage: string
@@ -676,6 +725,7 @@ export type Database = {
           location?: string | null
           logo?: string | null
           name?: string
+          pitch_deck_url?: string | null
           revenue?: string | null
           sector?: string
           stage?: string

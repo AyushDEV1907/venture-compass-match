@@ -35,6 +35,7 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
   });
   const [pitchDeck, setPitchDeck] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const sectors = [
     'FinTech', 'HealthTech', 'EdTech', 'AI/ML', 'SaaS', 
@@ -66,11 +67,71 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
         });
         return;
       }
+      
+      // Validate file type
+      const allowedTypes = [
+        'application/pdf',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF, PPT, or PPTX file",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       setPitchDeck(file);
       toast({
-        title: "File uploaded",
-        description: `${file.name} ready for submission`
+        title: "File selected",
+        description: `${file.name} ready for upload`
       });
+    }
+  };
+
+  const uploadPitchDeckToStorage = async (userId: string, startupId: string, file: File) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/pitch-deck-${Date.now()}.${fileExt}`;
+      
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('pitch-decks')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw uploadError;
+      }
+
+      // Record metadata in pitch_deck_uploads table
+      const { error: metadataError } = await supabase
+        .from('pitch_deck_uploads')
+        .insert({
+          startup_id: startupId,
+          user_id: userId,
+          file_name: file.name,
+          file_path: fileName,
+          file_size: file.size,
+          content_type: file.type,
+          upload_status: 'completed'
+        });
+
+      if (metadataError) {
+        console.error('Metadata insert error:', metadataError);
+        throw metadataError;
+      }
+
+      return fileName;
+    } catch (error) {
+      console.error('Error uploading pitch deck:', error);
+      throw error;
     }
   };
 
@@ -85,45 +146,93 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
     }
 
     setIsSubmitting(true);
+    setUploadProgress(0);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      setUploadProgress(25);
+
+      // First, get or create the startup record
+      const { data: existingStartup } = await supabase
+        .from('startups')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      let startupId = existingStartup?.id;
+
+      // Update or create startup record
+      if (startupId) {
+        const { error: updateError } = await supabase
+          .from('startups')
+          .update({
+            name: formData.name,
+            description: formData.description,
+            sector: formData.sector,
+            stage: formData.stage,
+            funding_target: formData.fundingTarget,
+            location: formData.location,
+            team_size: formData.teamSize,
+            revenue: formData.revenue,
+            traction: formData.traction
+          })
+          .eq('user_id', user.id);
+
+        if (updateError) throw updateError;
+      } else {
+        const { data: newStartup, error: insertError } = await supabase
+          .from('startups')
+          .insert({
+            user_id: user.id,
+            name: formData.name,
+            description: formData.description,
+            sector: formData.sector,
+            stage: formData.stage,
+            funding_target: formData.fundingTarget,
+            location: formData.location,
+            team_size: formData.teamSize,
+            revenue: formData.revenue,
+            traction: formData.traction
+          })
+          .select('id')
+          .single();
+
+        if (insertError) throw insertError;
+        startupId = newStartup.id;
+      }
+
+      setUploadProgress(50);
+
       // Upload pitch deck if provided
       let pitchDeckUrl = null;
-      if (pitchDeck) {
-        const fileExt = pitchDeck.name.split('.').pop();
-        const fileName = `${user.id}/pitch-deck-${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('pitch-decks')
-          .upload(fileName, pitchDeck);
+      if (pitchDeck && startupId) {
+        try {
+          pitchDeckUrl = await uploadPitchDeckToStorage(user.id, startupId, pitchDeck);
+          setUploadProgress(75);
+          
+          // Update startup record with pitch deck URL
+          await supabase
+            .from('startups')
+            .update({ pitch_deck_url: pitchDeckUrl })
+            .eq('id', startupId);
 
-        if (uploadError) {
+          toast({
+            title: "Pitch deck uploaded successfully! 📄",
+            description: "Your pitch deck has been securely stored."
+          });
+        } catch (uploadError) {
           console.error('Upload error:', uploadError);
-        } else {
-          pitchDeckUrl = fileName;
+          toast({
+            title: "Pitch deck upload failed",
+            description: "Your profile was saved, but the pitch deck couldn't be uploaded. You can try again later.",
+            variant: "destructive"
+          });
         }
       }
 
-      // Update startup profile
-      const { error: updateError } = await supabase
-        .from('startups')
-        .update({
-          name: formData.name,
-          description: formData.description,
-          sector: formData.sector,
-          stage: formData.stage,
-          funding_target: formData.fundingTarget,
-          location: formData.location,
-          team_size: formData.teamSize,
-          revenue: formData.revenue,
-          traction: formData.traction
-        })
-        .eq('user_id', user.id);
-
-      if (updateError) throw updateError;
+      setUploadProgress(90);
 
       // Update user profile
       await supabase
@@ -137,6 +246,8 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
           location: formData.location
         })
         .eq('id', user.id);
+
+      setUploadProgress(100);
 
       toast({
         title: "Profile Updated! 🚀",
@@ -153,6 +264,7 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
       });
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
@@ -320,7 +432,7 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
           <div className="border-2 border-dashed border-muted rounded-lg p-6">
             <div className="text-center">
               <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-              <h3 className="font-medium mb-2">Upload Pitch Deck</h3>
+              <h3 className="font-medium mb-2">Upload Pitch Deck (Optional)</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Upload your pitch deck (PDF, PPT, or PPTX - Max 10MB)
               </p>
@@ -330,15 +442,32 @@ const StartupOnboarding = ({ onComplete }: StartupOnboardingProps) => {
                 onChange={handleFileUpload}
                 className="hidden"
                 id="pitch-deck-upload"
+                disabled={isSubmitting}
               />
               <Label htmlFor="pitch-deck-upload" className="cursor-pointer">
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild disabled={isSubmitting}>
                   <span>Choose File</span>
                 </Button>
               </Label>
               {pitchDeck && (
                 <div className="mt-2">
                   <Badge variant="secondary">{pitchDeck.name}</Badge>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {(pitchDeck.size / 1024 / 1024).toFixed(1)} MB
+                  </p>
+                </div>
+              )}
+              {uploadProgress > 0 && uploadProgress < 100 && (
+                <div className="mt-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Uploading... {uploadProgress}%
+                  </p>
                 </div>
               )}
             </div>
