@@ -11,6 +11,7 @@ import InvestorPreferences from "@/components/InvestorPreferences";
 import InvestorCalibration from "@/components/InvestorCalibration";
 import InvestorSwipe from "@/components/InvestorSwipe";
 import InvestorMatches from "@/components/InvestorMatches";
+import PersonalizedRecommendations from "@/components/investor/PersonalizedRecommendations";
 import { useInvestorStats } from "@/hooks/useInvestorStats";
 import EnhancedSubscriptionPlans from "@/components/enhanced/EnhancedSubscriptionPlans";
 import AdvancedAnalytics from "@/components/enhanced/AdvancedAnalytics";
@@ -162,6 +163,7 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
         <Tabs defaultValue="discover" className="space-y-6">
           <TabsList className="bg-white border shadow-sm">
             <TabsTrigger value="discover">Discover</TabsTrigger>
+            <TabsTrigger value="recommendations">AI Recommendations</TabsTrigger>
             <TabsTrigger value="matches">My Matches</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
@@ -220,6 +222,10 @@ const InvestorDashboard = ({ onLogout }: InvestorDashboardProps) => {
                 </Card>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="recommendations">
+            <PersonalizedRecommendations />
           </TabsContent>
 
           <TabsContent value="matches">

@@ -4,28 +4,35 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Users, TrendingUp, MessageSquare, Star, Eye, Target, LogOut, DollarSign } from "lucide-react";
+import { Building2, Users, TrendingUp, MessageSquare, Star, Eye, Target, LogOut, DollarSign, Award, Calendar, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/components/AuthContext";
 import { useStartupStats } from "@/hooks/useStartupStats";
+import FundabilityScoring from "@/components/startup/FundabilityScoring";
+import ImprovementPlan from "@/components/startup/ImprovementPlan";
+import QuarterlyCheckin from "@/components/startup/QuarterlyCheckin";
+import StartupMatches from "@/components/StartupMatches";
+import StartupProfile from "@/components/StartupProfile";
+import StartupPitchDeck from "@/components/StartupPitchDeck";
 
 interface StartupDashboardProps {
   onLogout: () => void;
 }
 
 const StartupDashboard = ({ onLogout }: StartupDashboardProps) => {
-  const [profile, setProfile] = useState<any>(null);
+  const { signOut, userProfile } = useAuth();
   const [subscription, setSubscription] = useState('free');
   const { stats, loading: statsLoading } = useStartupStats();
 
   useEffect(() => {
-    const savedProfile = localStorage.getItem('startupProfile');
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
-    }
-    
     const savedSubscription = localStorage.getItem('subscription') || 'free';
     setSubscription(savedSubscription);
   }, []);
+
+  const handleLogout = async () => {
+    await signOut();
+    onLogout();
+  };
 
   const staticStats = [
     { label: 'Profile Views', value: 89, icon: Eye, change: '+12' },
@@ -55,7 +62,7 @@ const StartupDashboard = ({ onLogout }: StartupDashboardProps) => {
               <div>
                 <h1 className="text-2xl font-bold">Startup Dashboard</h1>
                 <p className="text-muted-foreground">
-                  Welcome back, {profile?.company || 'Startup'}!
+                  Welcome back, {userProfile?.company || 'Startup'}!
                 </p>
               </div>
             </div>
@@ -75,7 +82,7 @@ const StartupDashboard = ({ onLogout }: StartupDashboardProps) => {
               >
                 {subscription.toUpperCase()}
               </Badge>
-              <Button variant="outline" onClick={onLogout}>
+              <Button variant="outline" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
               </Button>
@@ -116,67 +123,110 @@ const StartupDashboard = ({ onLogout }: StartupDashboardProps) => {
           <TabsList className="bg-white border shadow-sm">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="fundability">Fundability Score</TabsTrigger>
+            <TabsTrigger value="improvement">Improvement Plan</TabsTrigger>
+            <TabsTrigger value="checkin">Quarterly Check-in</TabsTrigger>
             <TabsTrigger value="matches">Matches</TabsTrigger>
             <TabsTrigger value="pitch">Pitch Deck</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Manage your startup presence</CardDescription>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button className="h-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                  <Building2 className="w-6 h-6 mr-2" />
-                  Update Profile
-                </Button>
-                <Button variant="outline" className="h-20">
-                  <Users className="w-6 h-6 mr-2" />
-                  View Matches
-                </Button>
-                <Button variant="outline" className="h-20">
-                  <MessageSquare className="w-6 h-6 mr-2" />
-                  Messages
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>Manage your startup presence</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 gap-4">
+                  <Button className="h-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white justify-start">
+                    <Award className="w-6 h-6 mr-4" />
+                    <div className="text-left">
+                      <div className="font-semibold">Check Fundability Score</div>
+                      <div className="text-sm opacity-90">Get AI assessment</div>
+                    </div>
+                  </Button>
+                  <Button variant="outline" className="h-16 justify-start">
+                    <Target className="w-6 h-6 mr-4" />
+                    <div className="text-left">
+                      <div className="font-semibold">View Improvement Plan</div>
+                      <div className="text-sm text-muted-foreground">Enhance your profile</div>
+                    </div>
+                  </Button>
+                  <Button variant="outline" className="h-16 justify-start">
+                    <Calendar className="w-6 h-6 mr-4" />
+                    <div className="text-left">
+                      <div className="font-semibold">Quarterly Check-in</div>
+                      <div className="text-sm text-muted-foreground">Update progress</div>
+                    </div>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle>Investment Readiness</CardTitle>
+                  <CardDescription>Your current status</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Award className="w-8 h-8 text-blue-600" />
+                        <div>
+                          <p className="font-semibold">Fundability Score</p>
+                          <p className="text-sm text-muted-foreground">Get AI assessment</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline">Pending</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Building2 className="w-8 h-8 text-green-600" />
+                        <div>
+                          <p className="font-semibold">Profile Complete</p>
+                          <p className="text-sm text-muted-foreground">All sections filled</p>
+                        </div>
+                      </div>
+                      <Badge className="bg-green-100 text-green-700">Complete</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <BarChart3 className="w-8 h-8 text-yellow-600" />
+                        <div>
+                          <p className="font-semibold">Pitch Deck</p>
+                          <p className="text-sm text-muted-foreground">Upload materials</p>
+                        </div>
+                      </div>
+                      <Badge className="bg-yellow-100 text-yellow-700">Pending</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="profile">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle>Startup Profile</CardTitle>
-                <CardDescription>Your profile information</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Profile management coming soon...</p>
-              </CardContent>
-            </Card>
+            <StartupProfile />
+          </TabsContent>
+
+          <TabsContent value="fundability">
+            <FundabilityScoring />
+          </TabsContent>
+
+          <TabsContent value="improvement">
+            <ImprovementPlan />
+          </TabsContent>
+
+          <TabsContent value="checkin">
+            <QuarterlyCheckin />
           </TabsContent>
 
           <TabsContent value="matches">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle>Investor Matches</CardTitle>
-                <CardDescription>Investors interested in your startup</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Matches will appear here when investors show interest...</p>
-              </CardContent>
-            </Card>
+            <StartupMatches />
           </TabsContent>
 
           <TabsContent value="pitch">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle>Pitch Deck</CardTitle>
-                <CardDescription>Upload and manage your pitch materials</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Pitch deck management coming soon...</p>
-              </CardContent>
-            </Card>
+            <StartupPitchDeck />
           </TabsContent>
         </Tabs>
       </div>
